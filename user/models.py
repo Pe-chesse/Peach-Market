@@ -3,9 +3,8 @@ from django.db import models
 
 class UserManager(BaseUserManager):
 
-    def create_user(self, firebase_uid, username):
+    def create_user(self, username):
         user = self.model(
-            firebase_uid=firebase_uid,
             username = username,
         )
         user.save(using=self._db)
@@ -14,8 +13,6 @@ class UserManager(BaseUserManager):
 
 class User(AbstractUser):
 
-    firebase_uid = models.CharField(max_length=128,unique=True, db_index=True)
-    email = models.EmailField()
     image_url = models.URLField(null=True, blank=True)
     nickname = models.CharField(max_length=20, null=True, blank=True)
     description = models.TextField()
