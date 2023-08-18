@@ -36,7 +36,7 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
         except Exception:
             raise FirebaseError()
         try:
-            user = User.get(username=uid)
+            user = User.objects.get(username=uid)
         except :
             user = User.objects.create_user(
                 username = uid,
