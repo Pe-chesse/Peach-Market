@@ -1,7 +1,6 @@
 from django.db import models
 from user.models import User
 
-
 # Create your models here.s
 class Post(models.Model):
     title = models.CharField(max_length=30)
@@ -14,7 +13,6 @@ class Post(models.Model):
     
     def __str__(self):
         return self.title
-
 
 class Comment(models.Model):
     post = models.ForeignKey('Post', on_delete=models.CASCADE)
