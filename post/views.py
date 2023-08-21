@@ -1,6 +1,6 @@
 # 데이터 처리
-from .models import User, Product, Post, Comment
-from .serializers import ProductSerializer, PostSerializer, CommentSerializer, CommentCreateSerializer
+from .models import Product, Post, Comment,Like
+from .serializers import ProductSerializer, PostSerializer, PostListSerializer, CommentCreateSerializer,PostViewSerializer,LikeSerializer
 # APIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -80,7 +80,7 @@ class PostList(APIView):
     # Post list
     def get(self, request):
         posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
+        serializer = PostListSerializer(posts, many=True,context={'request': request})
         return Response(serializer.data)
 
 
@@ -100,88 +100,153 @@ class PostWrite(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 게시글 수정
-class PostUpdate(APIView):
+# 게시글 수정/삭제/댓글 작성
+class PostAPIView(APIView):
     
     authentication_classes = [FirebaseAuthentication]
     permission_classes = [IsAuthenticated]
     
-    def get(self, request, pk):
-        post = Post.objects.get(pk=pk)
-        serializer = PostSerializer(post)
-        return Response(serializer.data)
+    def put(self, request, pk):
+        try:
+            post = Post.objects.get(pk=pk)
+            if post.user != request.user:
+                return Response("권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
+
+            request_data = request.data.copy()
+            request_data['user'] = request.user.pk
+            serializer = PostSerializer(post, data=request_data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response("게시글을 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
+    
+    def delete(self, request, pk):
+        try:
+            post = Post.objects.get(pk=pk)
+            
+            if post.user != request.user:
+                return Response("권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
+            
+            post.delete()
+            return Response({'msg':'게시글이 삭제되었습니다.'},status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response("게시글을 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
     
     def post(self, request, pk):
-        post = Post.objects.get(pk=pk)
-        request_data = request.data.copy()
-        request_data['user'] = request.user.pk
-        serializer = PostSerializer(post, data=request_data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        try:
+            comment_data = request.data.copy()
+            comment_data['user'] = request.user.pk
+            comment_data['post'] = pk
+            serializer = CommentCreateSerializer(data=comment_data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BA_REQUEST)
+        except:
+            return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
-# 게시글 삭제
-class PostDelete(APIView):
-    def post(self, request, pk, format=None):
-        post = Post.objects.get(pk=pk)
-        post.delete()
-        return Response({'msg':'게시글이 삭제되었습니다.'},status=status.HTTP_204_NO_CONTENT)
+class LikeAPIView(APIView):
+    
+    authentication_classes = [FirebaseAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request,pk):
+        like_data = {
+            'user' : request.user.pk,
+            'post' : pk
+        }
+        try:
+            like = Like.objects.filter(user = request.user.pk,post = pk)
+            if len(like) == 0:
+                raise
+            for i in like:
+                i.delete()
+            return Response('좋아요 취소',status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            print(e)
+            try:
+                like = LikeSerializer(data=like_data)
+                if like.is_valid():
+                    like.save()
+                    return Response('좋아요',status=status.HTTP_200_OK)
+                return Response(like.errors, status=400)
+            except Exception as e:
+                return Response(e,status=status.HTTP_404_NOT_FOUND)
 
 
 # 게시글 상세 조회
 class PostDetail(APIView):
     def get(self, request, pk):
-        post = Post.objects.prefetch_related('comment_set').get(pk=pk)
-        
-        comments = post.comment_set.all()
-        serialized_comments = CommentSerializer(comments, many=True).data
-        
-        data = {
-            'post_id': pk,
-            'comments': serialized_comments,
-        }
-        return Response(data)
-        
-
-
-# < Comment >
-# 댓글 리스트, 작성
-class CommentView(APIView):
-    def get(self, request, post_id):
-        post = Post.objects.get(id=post_id)
-        comments = post.comment_set.all()
-        serializer = CommentSerializer(comments, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request, post_id):
+        try:
+            post = Post.objects.get(pk = pk)
+            print(post)
+            serialized_posts = PostViewSerializer(post,context={'request': request})
+            # serialized_posts = PostViewSerializer(post)
+            return Response(serialized_posts.data)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    
+    def post(self, request, pk):
         serializer = CommentCreateSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user, post_id=post_id)
+            serializer.save(user=request.user, post_id=pk)
             return Response(serializer.data, status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BA_REQUEST)
 
 
 # 댓글 수정, 삭제
 class CommentDetailView(APIView):
-    def put(self, request, post_id, comment_id):
-        comment = get_object_or_404(Comment, id=comment_id)
-        if request.user == comment.user:
-            serializer = CommentCreateSerializer(comment, data=request.data)
+
+    authentication_classes = [FirebaseAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, comment_id):
+        try:
+            parent_comment = Comment.objects.get(pk = comment_id)
+            comment_data = request.data.copy()
+            comment_data['user'] = request.user.pk
+            comment_data['post'] = parent_comment.post.pk
+            comment_data['parent_comment'] = comment_id
+            serializer = CommentCreateSerializer(data=comment_data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BA_REQUEST)
+        except:
+            return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+    
+    def put(self, request, comment_id):
+        try:
+            comment = Comment.objects.get(pk = comment_id)
+            if request.user != comment.user:
+                return Response("권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
+
+            comment_data = request.data.copy()
+            comment_data['user'] = request.user.pk
+            comment_data['post'] = comment.post.pk
+            serializer = CommentCreateSerializer(comment, data=comment_data)
             if serializer.is_valid():
                 serializer.save() # post에 user 정보 있기 때문에 (user=request.user) 생략
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response("권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
+            
+        except:
+            return Response("댓글을 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)        
 
 
-    def delete(self, request, post_id, comment_id):
-        comment = get_object_or_404(Comment, id=comment_id)
-        if request.user == comment.user:
+    def delete(self, request, comment_id):
+        try:
+            comment = Comment.objects.get(pk = comment_id)
+            if request.user != comment.user:
+                return Response("권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
+            
             comment.delete()
             return Response("삭제되었습니다.", status=status.HTTP_204_NO_CONTENT)
-        else: 
-            return Response("권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
+
+        except:
+            return Response("댓글을 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
