@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
+from django.db.models import Q
 # user
 from rest_framework.permissions import IsAuthenticated
 from user.firebase import FirebaseAuthentication
@@ -77,12 +78,10 @@ class ProductDetail(APIView):
 # < Post >
 # 게시글 목록 조회
 class PostList(APIView):
-    # Post list
     def get(self, request):
         posts = Post.objects.all()
         serializer = PostListSerializer(posts, many=True,context={'request': request})
         return Response(serializer.data)
-
 
 # 게시글 작성
 class PostWrite(APIView):
@@ -250,3 +249,20 @@ class CommentDetailView(APIView):
 
         except:
             return Response("댓글을 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
+
+
+class PostSearchAPIView(APIView):
+    def post(self, request, format=None):
+        search_query = request.data.get("search_query")
+        
+        queryset = Post.objects.all()
+        
+        if search_query:
+            queryset = queryset.filter(
+                Q(user__username__icontains=search_query) |
+                Q(title__icontains=search_query) |
+                Q(body__icontains=search_query)
+            )
+        
+        serializer = PostSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
