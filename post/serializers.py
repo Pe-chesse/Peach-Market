@@ -90,6 +90,7 @@ class CommentViewSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id','body','user','child_comments','updated_at','created_at']
         
+
     def get_child_comments(self, obj):
         child_comments = obj.child_comments.filter(status = True)
         serializer = CommentViewSerializer(child_comments, many=True,context={'request': self.request})
