@@ -22,7 +22,7 @@ class User(AbstractUser):
 
     image_url = models.URLField(null=True, blank=True)
     nickname = models.CharField(max_length=20, null=True, blank=True)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     followings = models.ManyToManyField('self', symmetrical=False, related_name='followers')
 
     def __str__(self):
