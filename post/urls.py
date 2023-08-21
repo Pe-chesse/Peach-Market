@@ -31,7 +31,8 @@ urlpatterns =[
     path('product/detail/<int:pk>/delete/', views.ProductDelete.as_view()),
     
     # <Comment - 댓글>
-    
+    path('detail/<int:post_id>/comment/', views.CommentView.as_view()),
+    path('detail/<int:post_id>/comment/<int:comment_id>', views.CommentDetailView.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
