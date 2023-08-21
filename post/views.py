@@ -45,18 +45,16 @@ class PostDetail(APIView):
 
 class PostSearchAPIView(APIView):
     def post(self, request, format=None):
-        user = request.data.get("user")
-        title = request.data.get("title")
-        body = request.data.get("body")
+        search_query = request.data.get("search_query")
         
         queryset = Post.objects.all()
         
-        if user:
-            queryset = queryset.filter(user__username__icontains=user)
-        if title:
-            queryset = queryset.filter(title__icontains=title)
-        if body:
-            queryset = queryset.filter(body__icontains=body)
+        if search_query:
+            queryset = queryset.filter(
+                Q(user__username__icontains=search_query) |
+                Q(title__icontains=search_query) |
+                Q(body__icontains=search_query)
+            )
         
         serializer = PostSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
