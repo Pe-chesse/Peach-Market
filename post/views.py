@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
+from django.db.models import Q
 # user
 from rest_framework.permissions import IsAuthenticated
 from user.firebase import FirebaseAuthentication
@@ -77,12 +78,10 @@ class ProductDetail(APIView):
 # < Post >
 # 게시글 목록 조회
 class PostList(APIView):
-    # Post list
     def get(self, request):
         posts = Post.objects.all()
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data)
-
 
 # 게시글 작성
 class PostWrite(APIView):
@@ -102,7 +101,7 @@ class PostWrite(APIView):
 
 # 게시글 수정
 class PostUpdate(APIView):
-    
+  
     authentication_classes = [FirebaseAuthentication]
     permission_classes = [IsAuthenticated]
     
@@ -136,13 +135,35 @@ class PostDetail(APIView):
         try:
             return Post.objects.get(pk=pk)
         except Post.DoesNotExist:
-            raise Http404
-        
-    # Post의 detail 보기
+            raise Http404        
     def get(self, request, pk, format=None):
         post = self.get_object(pk)
         serializer = PostSerializer(post)
-        return Response(serializer.data)
+        return Response(serializer.data) 
+    def put(self, request, pk, format=None):
+        post = self.get_object(pk)
+        serializer = PostSerializer(post, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, pk, format=None):
+        post = self.get_object(pk)
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-# < Comment >
+class PostSearchAPIView(APIView):
+    def post(self, request, format=None):
+        search_query = request.data.get("search_query")
+        
+        queryset = Post.objects.all()
+        
+        if search_query:
+            queryset = queryset.filter(
+                Q(user__username__icontains=search_query) |
+                Q(title__icontains=search_query) |
+                Q(body__icontains=search_query)
+            )
+        
+        serializer = PostSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

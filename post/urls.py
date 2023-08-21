@@ -4,6 +4,7 @@ from django.conf.urls.static import static
 from django.views.static import serve
 from django.conf import settings
 from . import views
+from .views import PostSearchAPIView
 
 urlpatterns =[
     # <Post - 게시글>
@@ -32,6 +33,7 @@ urlpatterns =[
     
     # <Comment - 댓글>
     
+    path('search/', PostSearchAPIView.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
