@@ -9,7 +9,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ('email', 'image_url','nickname','description','followings')
 
     
+class PublicUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email','nickname', 'image_url']
+
+
 class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username','followings')
+        fields = ('nickname','followings')

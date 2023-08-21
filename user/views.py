@@ -2,10 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .firebase import FirebaseAuthentication
-from .serializers import UserProfileSerializer , FollowSerializer
+from .serializers import UserProfileSerializer , FollowSerializer, PublicUserSerializer
 from rest_framework import status
-from django.shortcuts import get_object_or_404
-from django.contrib.auth import get_user_model
 from .models import User
 
 class ProtectedApiView(APIView):
@@ -34,26 +32,37 @@ class UserApiView(APIView):
         return Response(serializer.errors, status=400)
             
 
-class FollowView(APIView):
+class FollowAPIView(APIView):
+
+    authentication_classes = [FirebaseAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request, user_id):
+        follow_method = request.GET.get('f',"")
+        try:
+            user = User.objects.get(pk = user_id)
+            if follow_method:
+                follow_users = PublicUserSerializer(user.followings,many=True)
+            else:
+                follow_users = PublicUserSerializer(user.followers,many=True)
+            return Response(follow_users.data)
+        except Exception as e:
+            print(e)
+            return Response("해당 유저를 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
+
     def post(self, request, user_id):
-        if request.user.is_authenticated:
-            User = get_user_model()
             me = request.user
             you = User.objects.get(pk=user_id)
-            serializer = FollowSerializer(me)
-            if me != you:
-                if you.followers.filter(pk=me.pk).exists():
-                    you.followers.remove(me)
-                else:
-                    you.followers.add(me)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            try:
+                serializer = FollowSerializer(me)
+                if me == you:
+                    return Response("본인 팔로우 불가", status=status.HTTP_400_BAD_REQUEST)
 
-        else:
-            return Response('You must login first', status=status.HTTP_405_METHOD_NOT_ALLOWED )
-        
-            # if me in you.followers.all():
-            #     you.followers.remove(me)
-            #     return Response(f'unfollow {serializer.data}', status=status.HTTP_200_OK)
-            # else:
-            #     you.followers.add(me)
-            #     return Response(f'follow {serializer.data}', status=status.HTTP_200_OK)
+                if me.followings.filter(pk=you.pk).exists():
+                    me.followings.remove(you)
+                else:
+                    me.followings.add(you)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except:
+                return Response("해당 유저를 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
+            
