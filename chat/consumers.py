@@ -17,8 +17,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         try:
             @database_sync_to_async
             def get_sync_data(user):
-                sync_data = user.membership.annotate(last_message =F('chat_room__last_message'))
-                serializer = SyncMessageSerializer(sync_data,many=True)
+                serializer = SyncMessageSerializer(user.membership,many=True)
                 return serializer.data
             
             @database_sync_to_async
@@ -101,12 +100,12 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
             except :
                 raise ValueError("잘못된 chat_room 기입")
             
-        
         @database_sync_to_async
         def get_users_info(chat_room):
             members = ChatRoomMember.objects.filter(chat_room = chat_room)
             members_data = ChatRoomMembersSerializer(members,many = True)
             return members_data.data
+        
         try:
             room_group_name = f"chat_{message_data['request']['chat_room']}"
             await self.channel_layer.group_add(room_group_name, self.channel_name)
@@ -136,13 +135,13 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
             case 'deactive_chat':
                 await self.deactive_chat(message_data)
 
-
     async def chat_message(self, event):
         
         @database_sync_to_async
         def set_last_read(response):
+            print(response)
             member = ChatRoomMember.objects.get(chat_room = response['chat_room'],user = self.scope["user"])
-            last_message = ChatMessage.objects.get(id = response['id'])
+            last_message = ChatMessage.objects.get(num = response['num'],chat_room = response['chat_room'])
             member.last_read = last_message
             member.save()
 
