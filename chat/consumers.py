@@ -19,7 +19,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
             def get_sync_data(user):
                 sync_data = user.membership.annotate(last_message =F('chat_room__last_message'))
                 serializer = SyncMessageSerializer(sync_data,many=True)
-                return json.dumps(serializer.data)
+                return serializer.data
             
             @database_sync_to_async
             def get_user_list():
@@ -50,22 +50,9 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
 
         @database_sync_to_async
         def get_room(request):
-            try:
-                if request.get('chat_room'):
-                    return ChatRoom.objects.get(name = request.get('chat_room'))
-                target_user = User.objects.get(nickname = request.get('target'))
-                format_room = [target_user,self.scope['user']]
-                
-                hash_object = hashlib.md5()
-                hash_object.update(' '.join([i.username for i in format_room]).encode())
-                new_room_name = hash_object.hexdigest()[:16]
-
-                chat_room = ChatRoom.objects.create(name = new_room_name)
-                chat_room.users.set(format_room),
-
-                return chat_room
-            except Exception as e:
-                print(e)
+            if request.get('chat_room'):
+                return ChatRoom.objects.get(name = request.get('chat_room'))
+            raise ValueError('잘못된 chat_room 기입')
         
         @database_sync_to_async
         def create_message(chat_room,sender,content):
@@ -105,30 +92,35 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         
         @database_sync_to_async
         def get_last_message(chat_room):
-            last_message = ChatMessage.objects.filter(chat_room = chat_room).order_by('-num').first()
-            member = ChatRoomMember.objects.get(chat_room = chat_room,user = self.scope["user"])
-            member.last_read = last_message
-            member.save()
-            return last_message.num
+            try:
+                chat_room_object = ChatRoom.objects.get(name = chat_room)
+                member = ChatRoomMember.objects.get(chat_room = chat_room,user = self.scope["user"])
+                member.last_read = chat_room_object.last_message
+                member.save()
+                return chat_room_object.last_message.num if chat_room_object.last_message else 0
+            except :
+                raise ValueError("잘못된 chat_room 기입")
+            
         
         @database_sync_to_async
         def get_users_info(chat_room):
             members = ChatRoomMember.objects.filter(chat_room = chat_room)
             members_data = ChatRoomMembersSerializer(members,many = True)
             return members_data.data
-        
-        room_group_name = f"chat_{message_data['request']['chat_room']}"
-        await self.channel_layer.group_add(room_group_name, self.channel_name)
-        await self.channel_layer.group_send(room_group_name, {
-            'type' : 'update.read',
-            'chat_room' : message_data['request']['chat_room'],
-            'user' : self.scope["user"].email,
-            'read' : await get_last_message(message_data['request']['chat_room'])
-        })
-        members_data = await get_users_info(message_data['request']['chat_room'])
-        messages = [json.loads(i) for i in self.redis.lrange(room_group_name, 0, -1)]
-        await self.send(text_data=json.dumps({'members':members_data,'messages':messages}))
-    
+        try:
+            room_group_name = f"chat_{message_data['request']['chat_room']}"
+            await self.channel_layer.group_add(room_group_name, self.channel_name)
+            await self.channel_layer.group_send(room_group_name, {
+                'type' : 'update.read',
+                'chat_room' : message_data['request']['chat_room'],
+                'user' : self.scope["user"].email,
+                'read' : await get_last_message(message_data['request']['chat_room'])
+            })
+            members_data = await get_users_info(message_data['request']['chat_room'])
+            messages = [json.loads(i) for i in self.redis.lrange(room_group_name, 0, -1)]
+            await self.send(text_data=json.dumps({'members':members_data,'messages':messages}))
+        except Exception as e:
+            await self.send(text_data=json.dumps({'type':'error','message':e}))
     
     async def deactive_chat(self,message_data):
         room_group_name = f"chat_{message_data['request']['chat_room']}"
@@ -141,6 +133,8 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
                 await self.receive_chat(message_data)
             case 'active_chat':
                 await self.active_chat(message_data)
+            case 'deactive_chat':
+                await self.deactive_chat(message_data)
 
 
     async def chat_message(self, event):

@@ -13,8 +13,8 @@
     <br>
     <input id="chat-message-submit" type="button" value="Send">
     <br>
-
     <input id="chat-message-active" type="button" value="active">
+
     {{ room_name|json_script:"room-name" }}
     <script>
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
@@ -48,7 +48,7 @@
                 request: {
                     // target: '바다에서10년생존한사람'
                     // target: '산에서20년생존한사람'
-                    chat_room: 'bf64ea2189bd928a'
+                    chat_room: "{{ room_name }}",
                     // chat_room: '4b3b5734b4400b39'
                 },
                 content: message
@@ -62,7 +62,7 @@
                 request: {
                     // target: '바다에서10년생존한사람'
                     // target: '산에서20년생존한사람'
-                    chat_room: 'bf64ea2189bd928a'
+                    chat_room: "{{ room_name }}",
                     // chat_room: '4b3b5734b4400b39'
                 },
             }));

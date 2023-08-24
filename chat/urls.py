@@ -7,6 +7,6 @@ app_name = 'chat'
 
 urlpatterns = [
     path('', views.chat_index, name='chat_index'),
-    path('redis/', views.RedisMessageAPIView.as_view()),
+    path('room/', views.ChatRoomAPIView.as_view()),
     path('<str:room_name>/', views.chat_room, name='chat_room'),
 ]
