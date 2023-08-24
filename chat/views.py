@@ -1,31 +1,17 @@
 import hashlib
-
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import render
-
-from .models import ChatMessage,ChatRoom,User
-
-from rest_framework.permissions import IsAuthenticated
+from .models import ChatRoom,User
 from user.firebase import FirebaseAuthentication
 
-def chat_index(req):
-    return render(req, "chat/chat_index.html")
 
 def chat_room(req, room_name):
     return render(req, "chat/chat_room.html", {"room_name": room_name})
 
-# class ChatIndex(View):
-#     def get(self, req):
-#         return render(req, "chat/chat_index.html")
-
-# class ChatRoom(View):
-#     def get(self, req, room_name):
-#         return render(req, "chat/chat_room.html", {"room_name": room_name})
-
 
 class ChatRoomAPIView(APIView):
-
     authentication_classes = [FirebaseAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -46,5 +32,6 @@ class ChatRoomAPIView(APIView):
                 chat_room.users.set(format_room)
             
             return Response(chat_room.name,status=200)
+        
         except Exception as e:
             return Response(status=400)

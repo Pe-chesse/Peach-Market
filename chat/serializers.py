@@ -2,16 +2,18 @@ from .models import ChatMessage,ChatRoom,ChatRoomMember
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from user.serializers import PublicUserSerializer
+
 User = get_user_model()
 
 class ChatMessageSerializer(serializers.ModelSerializer):
     type = serializers.SerializerMethodField()
     user = serializers.SerializerMethodField()
+
     class Meta:
         model = ChatMessage
         fields = ['type','num','chat_room','content','status','user','time']
     
-    def get_type(self,obj):
+    def get_type(self, obj):
         return 'chat.message'
     
     def get_user(self, obj):
@@ -26,6 +28,7 @@ class SummaryMessageSerializer(serializers.ModelSerializer):
 class ChatRoomSerializer(serializers.ModelSerializer):
     users = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
+
     class Meta:
         model = ChatMessage
         fields = ['name','user_list','last_message']
@@ -42,7 +45,6 @@ class ChatRoomSerializer(serializers.ModelSerializer):
             return ''
         
 class ChatRoomMembersSerializer(serializers.ModelSerializer):
-    
     user_image_url = serializers.SerializerMethodField()
     user_nickname = serializers.SerializerMethodField()
     user_email= serializers.SerializerMethodField()
@@ -51,7 +53,6 @@ class ChatRoomMembersSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatRoomMember
         fields = ['user_image_url','user_nickname','user_email','last_read_num']
-
 
     def get_user_image_url(self, obj):
         return obj.user.image_url
@@ -80,7 +81,7 @@ class SyncMessageSerializer(serializers.ModelSerializer):
         chat_room = ChatRoom.objects.get(name = obj.chat_room)
         if chat_room.last_message:
             serializer = SummaryMessageSerializer(chat_room.last_message)
-            return serializer.data;
+            return serializer.data
         return 0
     
     def get_last_read(self, obj):
