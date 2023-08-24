@@ -45,15 +45,19 @@ class ChatRoomMembersSerializer(serializers.ModelSerializer):
     
     user_image_url = serializers.SerializerMethodField()
     user_nickname = serializers.SerializerMethodField()
+    user_email= serializers.SerializerMethodField()
     last_read_num = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoomMember
-        fields = ['user_image_url','user_nickname','last_read_num']
+        fields = ['user_image_url','user_nickname','user_email','last_read_num']
 
 
     def get_user_image_url(self, obj):
         return obj.user.image_url
+    
+    def get_user_email(self, obj):
+        return obj.user.email
     
     def get_user_nickname(self, obj):
         return obj.user.nickname
