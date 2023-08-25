@@ -28,7 +28,6 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
 
         if not id_token or not decoded_token:
             return None
-        print(decoded_token)
 
         try:
             uid = decoded_token.get("uid")

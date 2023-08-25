@@ -17,9 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+API_VERSIONS = 'api/v1/'
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('post/', include('post.urls')),
-    path('api/v1/account/',include('user.urls')),
-    path('chat/', include('chat.urls'),name='chat'),
+    path(f'{API_VERSIONS}post/', include('post.urls')),
+    path(f'{API_VERSIONS}account/',include('user.urls')),
+    path(f'{API_VERSIONS}chat/', include('chat.urls')),
+    path(f'{API_VERSIONS}bucket/', include('bucket.urls')),
 ]
