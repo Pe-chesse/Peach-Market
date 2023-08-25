@@ -1,47 +1,73 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <meta charset="utf-8"/>
+    <meta charset="utf-8" />
     <title>Chat Room</title>
 </head>
+
 <body>
     <textarea id="chat-log" cols="100" rows="20"></textarea>
     <br>
     <input id="chat-message-input" type="text" size="100">
     <br>
     <input id="chat-message-submit" type="button" value="Send">
+    <br>
+    <input id="chat-message-active" type="button" value="active">
+
     {{ room_name|json_script:"room-name" }}
     <script>
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
 
-        const chatSocket = new WebSocket(
-            `ws://${window.location.host}/ws/chat/${roomName}/`
-        );
 
-        chatSocket.onmessage = function(e) {
+        const chatSocket = new WebSocket(
+            `ws://${window.location.host}/ws/v1/chat/`);
+
+        chatSocket.onmessage = function (e) {
             const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').value += (data.message + '\n');
+            console.log(data)
+            document.querySelector('#chat-log').value += `${JSON.stringify(data)}\n`;
         };
 
-        chatSocket.onclose = function(e) {
+        chatSocket.onclose = function (e) {
             console.error('Chat socket closed unexpectedly');
         };
 
         document.querySelector('#chat-message-input').focus();
-        document.querySelector('#chat-message-input').onkeyup = function(e) {
+        document.querySelector('#chat-message-input').onkeyup = function (e) {
             if (e.keyCode === 13) {
                 document.querySelector('#chat-message-submit').click();
             }
         };
 
-        document.querySelector('#chat-message-submit').onclick = function(e) {
+        document.querySelector('#chat-message-submit').onclick = function (e) {
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
             chatSocket.send(JSON.stringify({
-                'message': message
+                type: 'send_chat',
+                request: {
+                    // target: '바다에서10년생존한사람'
+                    // target: '산에서20년생존한사람'
+                    chat_room: "{{ room_name }}",
+                    // chat_room: '4b3b5734b4400b39'
+                },
+                content: message
             }));
             messageInputDom.value = '';
         };
+
+        document.querySelector('#chat-message-active').onclick = function (e) {
+            chatSocket.send(JSON.stringify({
+                type: 'active_chat',
+                request: {
+                    // target: '바다에서10년생존한사람'
+                    // target: '산에서20년생존한사람'
+                    chat_room: "{{ room_name }}",
+                    // chat_room: '4b3b5734b4400b39'
+                },
+            }));
+        };
     </script>
 </body>
+
 </html>
