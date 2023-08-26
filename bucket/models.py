@@ -41,7 +41,24 @@ class PostImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE,null=True,blank=True,related_name='image_url')
     image = models.ImageField(upload_to='posts/')
     
+    def save(self, *args, **kwargs):
+        if self.image:
+            uploaded_path = self.upload_to_s3(self.image)
+            self.image = uploaded_path
+        super(PostImage, self).save(*args, **kwargs)
+
+    def upload_to_s3(self, image):
+
+        try:
+            s3.upload_fileobj(image, settings.AWS_STORAGE_BUCKET_NAME, image.name,ExtraArgs={"ACL": "public-read"})
+            return f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{image.name}'
+        except NoCredentialsError:
+            raise Exception('No AWS credentials provided')
+    
+    def __str__(self):
+        return self.image.name
+    
 @receiver(pre_delete, sender=PostImage)
-def delete_user_profile_image(sender, instance, **kwargs):
-    if instance.profile_image:
-        default_storage.delete(instance.profile_image.name)
+def delete_post_image(sender, instance, **kwargs):
+    if instance.image:
+        s3.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=instance.profile_image.name.split('/')[-1])

@@ -23,9 +23,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     
 class PublicUserSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
     class Meta:
         model = User
         fields = ['email','nickname', 'image_url']
+        
+    def get_image_url(self,obj):
+        try:
+            return obj.image_url.profile_image.name
+        except:
+            return None
 
 
 class FollowSerializer(serializers.ModelSerializer):

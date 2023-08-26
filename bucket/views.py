@@ -12,18 +12,25 @@ class CacheMediaAPIView(APIView):
     authentication_classes = [CustomAuthentication]
 
     def post(self, request):
-        def generate_file_name(string):
+        def generate_file_name(nickname,file_name):
             hash_object = hashlib.md5()
-            hash_object.update(f'{string}{int(time.time()* 1000)}'.encode())
+            hash_object.update(f'{nickname}{int(time.time()* 1000)}'.encode())
             return hash_object.hexdigest()[:32]
-            
-        image = request.FILES['file']
-        image_hash = generate_file_name(request.user.nickname)
-        image.name = f'user-{image_hash}.{image.name.split(".")[-1]}'
-        image_key = f'image:{image_hash}'
-        cache.set(image_key, image, timeout=3600) 
         
-        return Response(image_key)
+        uploaded_files = request.FILES.getlist('files')
+        image_keys = []
+
+        for uploaded_file in uploaded_files:
+            image_hash = generate_file_name(request.user.nickname,uploaded_file.name)
+            uploaded_file.name = f'user-{image_hash}.{uploaded_file.name.split(".")[-1]}'
+            image_key = f'image:{image_hash}'
+            
+            cache.set(image_key, uploaded_file, timeout=3600)
+            
+            image_keys.append(image_key)
+
+        return Response({'image_keys': image_keys},status=201)
+
     
     def get(self, request):
         

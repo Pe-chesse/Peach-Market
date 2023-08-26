@@ -1,4 +1,5 @@
 import json, redis
+from peach_market.settings import env
 from channels.generic.websocket import  AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from asgiref.sync import SyncToAsync
@@ -9,7 +10,7 @@ from .serializers import ChatMessageSerializer,ChatRoomMembersSerializer,SyncMes
 class ChatConsumer(AsyncWebsocketConsumer): # async
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.redis = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
+        self.redis = redis.StrictRedis(host=env('REDIS_ADDRESS'), port=int(env('REDIS_PORT')), db=0, decode_responses=True)
 
     async def connect(self):
         self.room_group_name = f"base_{self.scope['user'].username}"
