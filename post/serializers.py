@@ -1,14 +1,12 @@
 from .models import Product, Post, Comment, Like
+from user.models import User
+from user.serializers import PublicUserSerializer
+from bucket.serializers import PostImageURLSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-User = get_user_model()
-
-class PublicUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['nickname', 'image_url']
 
 class ProductSerializer(serializers.ModelSerializer):
+    user = PublicUserSerializer()
     class Meta:
         model = Product
         fields = '__all__'
@@ -19,6 +17,7 @@ class PostListSerializer(serializers.ModelSerializer):
         self.request = kwargs.pop('context').get('request')
         super(PostListSerializer, self).__init__(*args, **kwargs)
 
+    user = PublicUserSerializer()
     comment_length = serializers.SerializerMethodField()
     like_length = serializers.SerializerMethodField()
     is_like = serializers.SerializerMethodField()
@@ -56,12 +55,11 @@ class PostViewSerializer(serializers.ModelSerializer):
     comment_set = serializers.SerializerMethodField()
     like_set_length = serializers.SerializerMethodField()
     is_like = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id','title','body','user','img_url','updated_at','created_at','comment_set','like_set_length','is_like']
-
-
+        fields = ['id','title','body','user','image_url','updated_at','created_at','comment_set','like_set_length','is_like']
 
     def get_comment_set(self, obj):
         comment_set = obj.comment_set.filter(status = True,parent_comment = None)
@@ -77,7 +75,10 @@ class PostViewSerializer(serializers.ModelSerializer):
             return obj.like_set.filter(user=request_user).exists()
         except:
             return False
-
+    
+    def get_image_url(self, obj):
+        return [i.image.name for i in obj.image_url.all()]
+        
 
 class CommentViewSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):

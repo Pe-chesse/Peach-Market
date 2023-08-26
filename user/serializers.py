@@ -1,18 +1,38 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from .models import User
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    followings_length = serializers.SerializerMethodField()
+    followers_length = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ('email', 'image_url','nickname','description','followings')
+        fields = ('email','nickname','image_url','description','followings_length','followers_length')
+
+    def get_followers_length(self,obj):
+        return obj.followers.count()
+    
+    def get_followings_length(self,obj):
+        return obj.followings.count()
+    
+    def get_image_url(self,obj):
+        try:
+            return obj.image_url.profile_image.name
+        except:
+            return None
 
     
 class PublicUserSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
     class Meta:
         model = User
         fields = ['email','nickname', 'image_url']
+        
+    def get_image_url(self,obj):
+        try:
+            return obj.image_url.profile_image.name
+        except:
+            return None
 
 
 class FollowSerializer(serializers.ModelSerializer):

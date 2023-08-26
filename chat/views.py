@@ -1,10 +1,8 @@
 import hashlib
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import render
 from .models import ChatRoom,User
-from user.firebase import FirebaseAuthentication
 
 
 def chat_room(req, room_name):
@@ -12,8 +10,6 @@ def chat_room(req, room_name):
 
 
 class ChatRoomAPIView(APIView):
-    authentication_classes = [FirebaseAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:

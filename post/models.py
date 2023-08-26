@@ -7,7 +7,6 @@ class Product(models.Model):
     price = models.IntegerField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     description = models.TextField()
-    img_url = models.ImageField(null=True, upload_to="", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
@@ -19,7 +18,6 @@ class Post(models.Model):
     body = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.BooleanField(default=True)
-    img_url = models.ImageField(null=True, upload_to="", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

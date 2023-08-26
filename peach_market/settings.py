@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'post',
     'user',
     'chat',
+    'bucket',
     'storages',
     'rest_framework',
     'rest_framework_simplejwt',
@@ -90,10 +91,9 @@ WSGI_APPLICATION = 'peach_market.wsgi.application'
 
 CHANNEL_LAYERS = {
     "default": {
-        # "BACKEND": "channels.layers.InMemoryChannelLayer",
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [(env('REDIS_ADDRESS'), int(env('REDIS_PORT')))],
         },
     }
 }
@@ -102,10 +102,14 @@ CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
+    "http://localhost:5500",
+    "http://127.0.0.1:8000",
     "http://127.0.0.1:5500", 
 ]
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:8000",
+    "http://localhost:5500",
+    "http://127.0.0.1:8000",
     'http://127.0.0.1:5500',
 ]
 
@@ -118,6 +122,16 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{env('REDIS_ADDRESS')}:{env('REDIS_PORT')}/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
     }
 }
 
@@ -181,6 +195,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
 AWS_REGION = 'ap-northeast-2'
+
+AWS_DEFAULT_ACL = 'public-read'
 
 ###S3 Storages
 AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
