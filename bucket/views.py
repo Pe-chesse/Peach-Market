@@ -1,48 +1,41 @@
-import redis,base64,re,time,hashlib
-from django.http import FileResponse
+import time,hashlib
+from django.http import HttpResponse
+from django.core.cache import cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from post.utils.permissions import CustomPermission,CustomAuthentication
 
-from rest_framework.permissions import IsAuthenticated
-from user.firebase import FirebaseAuthentication
-
-
-redis = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 class CacheMediaAPIView(APIView):
-    
-    def extract_content_type(self,base64_data):
-        pattern = re.compile(r'data:image/([a-zA-Z]+);base64,')
-        match = pattern.match(base64_data)
-        
-        if match:
-            content_type = f'image/{match.group(1)}'
-            return content_type
-        
-        return None
 
-    def get(self, request):
-        image_key = request.GET.get('key')
-        base64_image_data = redis.get(image_key)
-        image_data = base64.b64decode(base64_image_data)
-        
-        return FileResponse(image_data, content_type=self.extract_content_type(base64_image_data))
-        
-    
+    permission_classes = [CustomPermission]
+    authentication_classes = [CustomAuthentication]
+
     def post(self, request):
-        
         def generate_file_name(string):
             hash_object = hashlib.md5()
-            hash_object.update(f'{string}{int(time.time())}'.encode())
-            return hash_object.hexdigest()[:16]
+            hash_object.update(f'{string}{int(time.time()* 1000)}'.encode())
+            return hash_object.hexdigest()[:32]
             
-        image_file = request.FILES['file']
-        file_exp = image_file.name.split(".")[-1]
+        image = request.FILES['file']
+        image_hash = generate_file_name(request.user.nickname)
+        image.name = f'user-{image_hash}.{image.name.split(".")[-1]}'
+        image_key = f'image:{image_hash}'
+        cache.set(image_key, image, timeout=3600) 
         
-        image_data = image_file.read()
-        base64_image_data = base64.b64encode(image_data).decode('utf-8')
+        return Response(image_key)
+    
+    def get(self, request):
         
-        redis_key = f'image:{generate_file_name}.{file_exp}'
-        redis.set(redis_key, base64_image_data)
+        image_key = request.GET.get('key')
+        content_type = request.GET.get('content_type')
+
+        if not image_key.startswith("image:"):
+            return Response("포맷이 올바르지 않습니다", status=400)
         
-        return Response(redis_key)
+        image_data = cache.get(image_key)
+        if image_data:
+            return HttpResponse(image_data.read(), content_type=image_data.content_type)
+        else:
+            return HttpResponse(status=404)
+        

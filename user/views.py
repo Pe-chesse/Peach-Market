@@ -1,22 +1,17 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .firebase import FirebaseAuthentication
 from .serializers import UserProfileSerializer , FollowSerializer, PublicUserSerializer
+from bucket.utils.upload import upload_redis_to_bucket
 from rest_framework import status
 from .models import User
 
 class ProtectedApiView(APIView):
-    authentication_classes = [FirebaseAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user 
         return Response({"message": f"Authenticated user: {user.username}"})
     
 class UserApiView(APIView):
-    authentication_classes = [FirebaseAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
@@ -25,7 +20,14 @@ class UserApiView(APIView):
     
     def put(self, request):
         user = request.user
-        serializer = UserProfileSerializer(user,data=request.data)
+        data = request.data.copy()
+        if data['image_url']:
+            print(data['image_url'])
+            image_url = data.pop('image_url')
+            print(image_url)
+            upload_redis_to_bucket(user,image_url[0])
+
+        serializer = UserProfileSerializer(user,data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=201)
@@ -33,9 +35,6 @@ class UserApiView(APIView):
             
 
 class FollowAPIView(APIView):
-
-    authentication_classes = [FirebaseAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get(self,request, user_id):
         follow_method = request.GET.get('f',"")

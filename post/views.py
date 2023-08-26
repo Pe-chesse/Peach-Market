@@ -1,20 +1,25 @@
 # 데이터 처리
 from .models import Product, Post, Comment,Like
 from .serializers import ProductSerializer, PostSerializer, PostListSerializer, CommentCreateSerializer,PostViewSerializer,LikeSerializer
+from user.serializers import PublicUserSerializer
+from bucket.utils.upload import upload_redis_to_bucket
 # APIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.http import Http404
 from django.db.models import Q
 # user
-from rest_framework.permissions import IsAuthenticated
-from user.firebase import FirebaseAuthentication
+from rest_framework.permissions import AllowAny
+from post.utils.permissions import CustomPermission,CustomAuthentication
 
 
 # < Product >
 # 상품 목록 조회
 class ProductList(APIView):
+
+    authentication_classes = [] 
+    permission_classes = [AllowAny] 
+
     def get(self, request):
         products = Product.objects.all()
         serializer = ProductSerializer(products, many=True)
@@ -23,9 +28,6 @@ class ProductList(APIView):
 
 # 상품 등록
 class ProductWrite(APIView):
-    
-    authentication_classes = [FirebaseAuthentication]
-    permission_classes = [IsAuthenticated]
     
     def post(self, request):
         request_data = request.data.copy()
@@ -39,9 +41,6 @@ class ProductWrite(APIView):
 
 # 상품 수정
 class ProductUpdate(APIView):
-    
-    authentication_classes = [FirebaseAuthentication]
-    permission_classes = [IsAuthenticated]
     
     def get(self, request, pk):
         product = Product.objects.get(pk=pk)
@@ -69,6 +68,10 @@ class ProductDelete(APIView):
 
 # 상품 상세 조회
 class ProductDetail(APIView):
+
+    authentication_classes = []  # 인증 무시
+    permission_classes = [AllowAny]  # 권한 무시
+
     def get(self, request, pk):
         product = Product.objects.get(pk=pk)
         serializer = ProductSerializer(product)
@@ -76,35 +79,47 @@ class ProductDetail(APIView):
 
 
 # < Post >
-# 게시글 목록 조회
+# get: 게시글 목록 조회 
+# post: 게시글 작성
 class PostList(APIView):
+    
+    
+    permission_classes = [CustomPermission]
+    authentication_classes = [CustomAuthentication]
+
     def get(self, request):
         posts = Post.objects.all()
         serializer = PostListSerializer(posts, many=True,context={'request': request})
         return Response(serializer.data)
-
-# 게시글 작성
-class PostWrite(APIView):
-
-    authentication_classes = [FirebaseAuthentication]
-    permission_classes = [IsAuthenticated]
-
+    
     def post(self, request):
         request_data = request.data.copy()
         request_data['user'] = request.user.pk
         serializer = PostSerializer(data=request_data)
         if serializer.is_valid():
             serializer.save()
+            # upload_redis_to_bucket(post)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 # 게시글 수정/삭제/댓글 작성
 class PostAPIView(APIView):
     
-    authentication_classes = [FirebaseAuthentication]
-    permission_classes = [IsAuthenticated]
-    
+    permission_classes = [CustomPermission]
+    authentication_classes = [CustomAuthentication]
+
+    def get(self, request, pk):
+        try:
+            post = Post.objects.get(pk = pk)
+            serialized_posts = PostViewSerializer(post,context={'request': request})
+            return Response(serialized_posts.data)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
     def put(self, request, pk):
         try:
             post = Post.objects.get(pk=pk)
@@ -124,7 +139,6 @@ class PostAPIView(APIView):
     def delete(self, request, pk):
         try:
             post = Post.objects.get(pk=pk)
-            
             if post.user != request.user:
                 return Response("권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
             
@@ -147,9 +161,6 @@ class PostAPIView(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
 class LikeAPIView(APIView):
-    
-    authentication_classes = [FirebaseAuthentication]
-    permission_classes = [IsAuthenticated]
     
     def get(self, request,pk):
         like_data = {
@@ -175,33 +186,9 @@ class LikeAPIView(APIView):
                 return Response(e,status=status.HTTP_404_NOT_FOUND)
 
 
-# 게시글 상세 조회
-class PostDetail(APIView):
-    def get(self, request, pk):
-        try:
-            post = Post.objects.get(pk = pk)
-            print(post)
-            serialized_posts = PostViewSerializer(post,context={'request': request})
-            # serialized_posts = PostViewSerializer(post)
-            return Response(serialized_posts.data)
-        except Exception as e:
-            print(e)
-            return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    
-    def post(self, request, pk):
-        serializer = CommentCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user, post_id=pk)
-            return Response(serializer.data, status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BA_REQUEST)
-
 
 # 댓글 수정, 삭제
 class CommentDetailView(APIView):
-
-    authentication_classes = [FirebaseAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def post(self, request, comment_id):
         try:
@@ -252,6 +239,10 @@ class CommentDetailView(APIView):
 
 
 class PostSearchAPIView(APIView):
+    
+    authentication_classes = []
+    permission_classes = [AllowAny] 
+
     def post(self, request, format=None):
         search_query = request.data.get("search_query")
         

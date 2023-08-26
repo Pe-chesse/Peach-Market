@@ -1,14 +1,11 @@
 from .models import Product, Post, Comment, Like
+from user.models import User
+from user.serializers import PublicUserSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-User = get_user_model()
-
-class PublicUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['nickname', 'image_url']
 
 class ProductSerializer(serializers.ModelSerializer):
+    user = PublicUserSerializer()
     class Meta:
         model = Product
         fields = '__all__'
@@ -19,6 +16,7 @@ class PostListSerializer(serializers.ModelSerializer):
         self.request = kwargs.pop('context').get('request')
         super(PostListSerializer, self).__init__(*args, **kwargs)
 
+    user = PublicUserSerializer()
     comment_length = serializers.SerializerMethodField()
     like_length = serializers.SerializerMethodField()
     is_like = serializers.SerializerMethodField()
@@ -51,7 +49,7 @@ class PostSerializer(serializers.ModelSerializer):
 class PostViewSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('context').get('request')
-        super(PostViewSerializer, self).__init__(*args, **kwargs)
+        super(PostListSerializer, self).__init__(*args, **kwargs)
     user = PublicUserSerializer()
     comment_set = serializers.SerializerMethodField()
     like_set_length = serializers.SerializerMethodField()
@@ -60,8 +58,6 @@ class PostViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id','title','body','user','img_url','updated_at','created_at','comment_set','like_set_length','is_like']
-
-
 
     def get_comment_set(self, obj):
         comment_set = obj.comment_set.filter(status = True,parent_comment = None)
