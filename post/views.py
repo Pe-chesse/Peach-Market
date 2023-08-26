@@ -23,7 +23,7 @@ class ProductList(APIView):
     def get(self, request):
         products = Product.objects.all()
         serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data,status=200)
 
 
 # 상품 등록
@@ -90,15 +90,17 @@ class PostList(APIView):
     def get(self, request):
         posts = Post.objects.all()
         serializer = PostListSerializer(posts, many=True,context={'request': request})
-        return Response(serializer.data)
+        return Response(serializer.data,status=200)
     
     def post(self, request):
         request_data = request.data.copy()
         request_data['user'] = request.user.pk
+        images = request_data['image_keys']
         serializer = PostSerializer(data=request_data)
         if serializer.is_valid():
-            serializer.save()
+            post = serializer.save()
             # upload_redis_to_bucket(post)
+            upload_redis_to_bucket(post,images)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -115,7 +117,7 @@ class PostAPIView(APIView):
         try:
             post = Post.objects.get(pk = pk)
             serialized_posts = PostViewSerializer(post,context={'request': request})
-            return Response(serialized_posts.data)
+            return Response(serialized_posts.data,status=200)
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -155,7 +157,7 @@ class PostAPIView(APIView):
             serializer = CommentCreateSerializer(data=comment_data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status.HTTP_200_OK)
+                return Response(serializer.data, status.HTTP_201_OK)
             return Response(serializer.errors, status=status.HTTP_400_BA_REQUEST)
         except:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
@@ -180,7 +182,7 @@ class LikeAPIView(APIView):
                 like = LikeSerializer(data=like_data)
                 if like.is_valid():
                     like.save()
-                    return Response('좋아요',status=status.HTTP_200_OK)
+                    return Response('좋아요',status=status.HTTP_201_OK)
                 return Response(like.errors, status=400)
             except Exception as e:
                 return Response(e,status=status.HTTP_404_NOT_FOUND)
@@ -200,7 +202,7 @@ class CommentDetailView(APIView):
             serializer = CommentCreateSerializer(data=comment_data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status.HTTP_200_OK)
+                return Response(serializer.data,status=201)
             return Response(serializer.errors, status=status.HTTP_400_BA_REQUEST)
         except:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
@@ -217,7 +219,7 @@ class CommentDetailView(APIView):
             serializer = CommentCreateSerializer(comment, data=comment_data)
             if serializer.is_valid():
                 serializer.save() # post에 user 정보 있기 때문에 (user=request.user) 생략
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(serializer.data, status=201)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
