@@ -245,17 +245,17 @@ class PostSearchAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny] 
 
-    def post(self, request, format=None):
+    def get(self, request, format=None):
         search_query = request.data.get("search_query")
         
         queryset = Post.objects.all()
         
         if search_query:
             queryset = queryset.filter(
-                Q(user__username__icontains=search_query) |
+                Q(user__nickname__icontains=search_query) |
                 Q(title__icontains=search_query) |
                 Q(body__icontains=search_query)
             )
         
-        serializer = PostSerializer(queryset, many=True)
+        serializer = PostListSerializer(queryset, many=True,context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)

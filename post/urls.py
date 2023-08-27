@@ -11,6 +11,8 @@ urlpatterns =[
     # 게시글 목록 조회 /작성
     path('', views.PostList.as_view()),
     # 게시글 수정/삭제/댓글
+    
+    path('search/', PostSearchAPIView.as_view()),
     path('<int:pk>/', views.PostAPIView.as_view()),
     # 좋아요
     path('<int:pk>/like/',views.LikeAPIView.as_view()),
@@ -29,9 +31,6 @@ urlpatterns =[
     # 상품 삭제
     path('product/detail/<int:pk>/delete/', views.ProductDelete.as_view()),
     
-    # <Comment - 댓글>
-    
-    path('search/', PostSearchAPIView.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
