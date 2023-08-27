@@ -62,7 +62,8 @@ class PostViewSerializer(serializers.ModelSerializer):
         fields = ['id','body','user','image_url','updated_at','created_at','comment_set','like_set_length','is_like']
 
     def get_comment_set(self, obj):
-        comment_set = obj.comment_set.filter(status = True,parent_comment = None)
+        comment_set = obj.comment_set.filter(status = False,parent_comment = None)
+        print(comment_set)
         serializer = CommentViewSerializer(comment_set, many=True,context={'request': self.request})
         return serializer.data
     
@@ -93,7 +94,7 @@ class CommentViewSerializer(serializers.ModelSerializer):
         
 
     def get_child_comments(self, obj):
-        child_comments = obj.child_comments.filter(status = True)
+        child_comments = obj.child_comments.filter(status = False)
         serializer = CommentViewSerializer(child_comments, many=True,context={'request': self.request})
         return serializer.data
 

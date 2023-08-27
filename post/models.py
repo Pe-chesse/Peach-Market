@@ -16,24 +16,24 @@ class Product(models.Model):
 class Post(models.Model):
     body = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    status = models.BooleanField(default=True)
+    status = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return self.id
+        return f'{self.id}.{self.user.nickname}:{self.body}'
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     body = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    status = models.BooleanField(default=True)
+    status = models.BooleanField(default=False)
     parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_comments')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return self.body
+        return f'{self.id}.{self.user.nickname}:{self.body}'
     
 
 class Like(models.Model):

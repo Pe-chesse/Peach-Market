@@ -12,12 +12,12 @@ urlpatterns =[
     path('', views.PostList.as_view()),
     # 게시글 수정/삭제/댓글
     
-    path('search/', PostSearchAPIView.as_view()),
     path('<int:pk>/', views.PostAPIView.as_view()),
     # 좋아요
     path('<int:pk>/like/',views.LikeAPIView.as_view()),
     # <Comment - 댓글>
     path('comment/<int:comment_id>/', views.CommentDetailView.as_view()),
+    path('search/', PostSearchAPIView.as_view()),
     
     # <Product - 상품>
     # 상품 목록 조회

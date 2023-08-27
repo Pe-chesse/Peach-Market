@@ -135,7 +135,7 @@ class PostAPIView(APIView):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except:
+        except Exception as e:
             return Response("게시글을 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
     
     def delete(self, request, pk):
@@ -151,15 +151,17 @@ class PostAPIView(APIView):
     
     def post(self, request, pk):
         try:
+            post = Post.objects.get(pk = pk)
             comment_data = request.data.copy()
             comment_data['user'] = request.user.pk
-            comment_data['post'] = pk
+            comment_data['post'] = post.pk
             serializer = CommentCreateSerializer(data=comment_data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status.HTTP_201_OK)
+                return Response(serializer.data, 201)
             return Response(serializer.errors, status=status.HTTP_400_BA_REQUEST)
-        except:
+        except Exception as e:
+            print(e)
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
 class LikeAPIView(APIView):
@@ -204,8 +206,8 @@ class CommentDetailView(APIView):
                 serializer.save()
                 return Response(serializer.data,status=201)
             return Response(serializer.errors, status=status.HTTP_400_BA_REQUEST)
-        except:
-            return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(e, status=status.HTTP_404_NOT_FOUND)
     
     def put(self, request, comment_id):
         try:
