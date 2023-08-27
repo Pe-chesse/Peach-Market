@@ -11,6 +11,17 @@ class ProtectedApiView(APIView):
     def get(self, request):
         user = request.user 
         return Response({"message": f"Authenticated user: {user.username}"})
+
+class NicknameVerifyApiView(APIView):
+
+    def get(self, request):
+        try:
+            nickname = request.GET.get('nickname',"")
+            User.objects.get(nickname = nickname)
+            return Response({"message": "사용 할 수 없는 닉네임입니다."},200)
+
+        except:
+            return Response({"message": "사용 가능한 닉네임입니다."},204)
     
 class UserApiView(APIView):
     
@@ -34,10 +45,11 @@ class UserApiView(APIView):
     def put(self, request):
         user = request.user
         data = request.data.copy()
-        data.pop('email')
-        if data['image_key']:
-            image_key = data.pop('image_key')
-            upload_redis_to_bucket(user,image_key)
+        if data.get('email',''):
+            data.pop('email')
+        
+        if data.get('image_key',''):
+            upload_redis_to_bucket(user,data['image_key'])
 
         serializer = UserProfileSerializer(user,data=data)
         if serializer.is_valid():

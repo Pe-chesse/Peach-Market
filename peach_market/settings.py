@@ -118,13 +118,6 @@ CORS_ALLOW_CREDENTIALS = True
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-import environ
-env = environ.Env() 
-environ.Env.read_env() 
-
-# 비밀 키 
-SECRET_KEY = env("SECRET_KEY") 
-
 DATABASES = { 
     'default': { 
         'ENGINE': 'django.db.backends.postgresql_psycopg2', 
