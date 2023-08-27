@@ -59,7 +59,7 @@ class PostViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id','title','body','user','image_url','updated_at','created_at','comment_set','like_set_length','is_like']
+        fields = ['id','body','user','image_url','updated_at','created_at','comment_set','like_set_length','is_like']
 
     def get_comment_set(self, obj):
         comment_set = obj.comment_set.filter(status = True,parent_comment = None)

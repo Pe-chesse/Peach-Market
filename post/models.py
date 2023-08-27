@@ -14,7 +14,6 @@ class Product(models.Model):
 
 
 class Post(models.Model):
-    title = models.CharField(max_length=30)
     body = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.BooleanField(default=True)
@@ -22,7 +21,7 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return self.title
+        return self.id
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
