@@ -253,7 +253,6 @@ class PostSearchAPIView(APIView):
         if search_query:
             queryset = queryset.filter(
                 Q(user__nickname__icontains=search_query) |
-                Q(title__icontains=search_query) |
                 Q(body__icontains=search_query)
             )
         
