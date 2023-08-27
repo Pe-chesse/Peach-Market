@@ -83,7 +83,6 @@ class ProductDetail(APIView):
 # post: 게시글 작성
 class PostList(APIView):
     
-    
     permission_classes = [CustomPermission]
     authentication_classes = [CustomAuthentication]
 
@@ -95,12 +94,13 @@ class PostList(APIView):
     def post(self, request):
         request_data = request.data.copy()
         request_data['user'] = request.user.pk
-        images = request_data['image_keys']
         serializer = PostSerializer(data=request_data)
         if serializer.is_valid():
             post = serializer.save()
-            # upload_redis_to_bucket(post)
-            upload_redis_to_bucket(post,images)
+            
+            if request_data.get('image_keys',''):
+                upload_redis_to_bucket(post,request_data['image_keys'])
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
