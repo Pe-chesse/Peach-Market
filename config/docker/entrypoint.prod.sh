@@ -1,6 +1,6 @@
 
 echo "Collecting static files..."
-python manage.py collectstatic --no-input --clear
+python manage.py collectstatic --clear
 
 # Apply database migrations
 echo "Applying database migrations..."
