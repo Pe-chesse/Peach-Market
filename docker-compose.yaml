@@ -2,6 +2,26 @@
 
 version: "3"
 services:
+  postgres:
+    container_name: postgres
+    image: postgres:13
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:rw
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    environment:
+      - REDIS_MAXMEMORY_POLICY=allkeys-lru
+      - REDIS_LIST_MAX_ZIPLIST_ENTRIES=30
+    volumes:
+      - redis_data:/data
   web:
     container_name: web
     build:
@@ -28,27 +48,6 @@ services:
       - "80:80"
     depends_on:
       - web
-
-  postgres:
-    container_name: postgres
-    image: postgres:13
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data:rw
-
-  redis:
-    container_name: redis
-    image: redis:latest
-    environment:
-      - REDIS_MAXMEMORY_POLICY=allkeys-lru
-      - REDIS_LIST_MAX_ZIPLIST_ENTRIES=30
-    volumes:
-      - redis_data:/data
 
 volumes:
   static:
