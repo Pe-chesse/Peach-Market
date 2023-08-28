@@ -2,8 +2,8 @@ import hashlib
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import render
-from .models import ChatRoom,User
-
+from .models import ChatRoom,User,ChatMessage
+from .serializers import ChatMessageSerializer
 
 def chat_room(req, room_name):
     return render(req, "chat/chat_room.html", {"room_name": room_name})
@@ -31,3 +31,33 @@ class ChatRoomAPIView(APIView):
         
         except Exception as e:
             return Response(status=400)
+        
+
+class ChatMessageListView(APIView):
+    def post(self, request):
+        chat_room = self.request.data.get('chat_room')
+        max_num = self.request.data.get('num')
+        
+        try:
+            chat_room = ChatRoom.objects.get(name = chat_room)
+            if not chat_room.users.filter(user = request.user).count():
+                return Response({'message':'권한이 없습니다'},403)
+
+            chat_messages = ChatMessage.objects.filter(
+                chat_room=chat_room,
+                num__lt=max_num
+            ).order_by('-num')[:30]
+            
+            if chat_messages.count() == 0:
+                return Response({'message':'메세지를 찾을 수 없습니다.'},204)
+            elif chat_messages.count() < 30:
+                limit = chat_messages.count()
+            else:
+                limit = 30
+
+            chat_messages = chat_messages[:limit][::-1]
+
+            serializer = ChatMessageSerializer(chat_messages, many=True)
+            return Response(serializer.data,200)
+        except:
+            return Response({'message':'채팅방을 찾을 수 없습니다.'},404)

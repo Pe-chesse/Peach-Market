@@ -133,6 +133,9 @@ class PostAPIView(APIView):
             serializer = PostSerializer(post, data=request_data)
             if serializer.is_valid():
                 serializer.save()
+                if request_data.get('image_keys',''):
+                    upload_redis_to_bucket(post,request_data['image_keys'])
+                    
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:

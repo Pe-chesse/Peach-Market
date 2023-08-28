@@ -41,3 +41,11 @@ def upload_redis_to_bucket(instance,image_key:str|list):
                     image=post_image)
         case _:
             print(type(instance))
+
+def delete_image(name:str):
+    try:
+        image = UserProfileImage.objects.get(profile_image__name = name)
+
+    except:
+        image = PostImage.objects.get(image__name = name)
+    

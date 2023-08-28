@@ -13,6 +13,8 @@ class ProtectedApiView(APIView):
         return Response({"message": f"Authenticated user: {user.username}"})
 
 class NicknameVerifyApiView(APIView):
+    permission_classes = [CustomPermission]
+    authentication_classes = [CustomAuthentication]
 
     def get(self, request):
         try:
@@ -47,6 +49,17 @@ class UserApiView(APIView):
         data = request.data.copy()
         if data.get('email',''):
             data.pop('email')
+            
+        if data.get('nickname',''):
+            
+            try:
+                nickname = request.GET.get('nickname',"")
+                User.objects.get(nickname = nickname)
+                return Response({"message": "사용 할 수 없는 닉네임입니다."},200)
+
+            except:
+                pass
+            
         
         if data.get('image_key',''):
             upload_redis_to_bucket(user,data['image_key'])
