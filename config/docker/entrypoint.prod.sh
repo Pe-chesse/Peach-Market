@@ -8,6 +8,6 @@ python manage.py migrate
 
 # Start Gunicorn processes
 echo "Starting Gunicorn..."
-exec gunicorn peach_market.wsgi:application \
+gunicorn peach_market.wsgi:application \
     --bind 0.0.0.0:8000 \
-    --workers 4 # 워커 수 조정 가능
+    --workers 4 
