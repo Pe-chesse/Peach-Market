@@ -6,6 +6,9 @@ FROM python:3.11.5-alpine3.17
 # Install PostgreSQL development library
 RUN apk add --no-cache postgresql-dev
 
+# Install gcc and other build tools (Ubuntu only)
+RUN apt-get update && apt-get install -y build-essential
+
 # create directory for the app user
 RUN mkdir -p /home/app
 
