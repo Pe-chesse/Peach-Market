@@ -1,8 +1,10 @@
-
 # FINAL #
 
 # pull official base image
 FROM python:3.11.5-alpine3.17
+
+# Install PostgreSQL development library
+RUN apk add --no-cache postgresql-dev
 
 # create directory for the app user
 RUN mkdir -p /home/app
