@@ -42,3 +42,7 @@ services:
       - REDIS_LIST_MAX_ZIPLIST_ENTRIES=30
     volumes:
       - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
