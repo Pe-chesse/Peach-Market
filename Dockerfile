@@ -20,7 +20,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt  
 
 # copy entrypoint-prod.sh
-COPY ./config/docker/entrypoint.prod.sh $APP_HOME
+COPY ./config/docker/entrypoint.prod.sh $APP_HOME/config/docker/entrypoint.prod.sh
 
 # copy project
 COPY . $APP_HOME
