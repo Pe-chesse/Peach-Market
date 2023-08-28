@@ -4,6 +4,7 @@ python manage.py collectstatic --no-input --clear
 
 # Apply database migrations
 echo "Applying database migrations..."
+python manage.py makemigrations
 python manage.py migrate
 
 # Start Gunicorn processes
