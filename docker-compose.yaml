@@ -1,0 +1,42 @@
+version: "3"
+services:
+  web:
+    container_name: web
+    build:
+      context: ./
+      dockerfile: Dockerfile.prod
+    command: gunicorn peach_market.wsgi:application --bind 0.0.0.0:8000
+    env_file:
+      - .env
+    expose:
+      - 8000
+    entrypoint:
+      - sh
+      - config/docker/entrypoint.prod.sh
+
+  nginx:
+    container_name: nginx
+    build: ./config/nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+
+  postgres:
+    container_name: postgres
+    image: postgres:13
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    environment:
+      - REDIS_MAXMEMORY_POLICY=allkeys-lru
+      - REDIS_LIST_MAX_ZIPLIST_ENTRIES=30
+    volumes:
+      - redis_data:/data
