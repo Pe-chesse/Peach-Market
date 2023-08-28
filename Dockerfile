@@ -16,6 +16,10 @@ RUN mkdir $APP_HOME
 RUN mkdir $APP_HOME/static
 WORKDIR $APP_HOME
 
+# install dependencies
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
 # copy entrypoint-prod.sh
 COPY ./config/docker/entrypoint.prod.sh $APP_HOME/config/docker/entrypoint.prod.sh
 

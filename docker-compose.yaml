@@ -2,10 +2,9 @@
 
 version: "3"
 services:
-  postgres:
+    postgres:
     container_name: postgres
     image: postgres:13
-    restart: always
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -13,7 +12,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data:rw
 
   redis:
     container_name: redis
@@ -49,6 +48,8 @@ services:
       - "80:80"
     depends_on:
       - web
+
+  
 
 volumes:
   static:

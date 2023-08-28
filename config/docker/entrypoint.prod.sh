@@ -1,14 +1,9 @@
-python -m venv venv
-venv/Script/Activate.ps1
-
-pip install -r requirements.txt  
 
 echo "Collecting static files..."
 python manage.py collectstatic --no-input --clear
 
 # Apply database migrations
 echo "Applying database migrations..."
-python manage.py makemigrations
 python manage.py migrate
 
 # Start Gunicorn processes
