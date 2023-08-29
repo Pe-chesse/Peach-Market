@@ -15,12 +15,10 @@ django_asgi_app = get_asgi_application()
 from chat.consumers import ChatConsumer
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    "websocket": 
-        AuthMiddlewareStack(
-            URLRouter([
+    "websocket":URLRouter([
                 path("ws/v1/chat/", ChatConsumer.as_asgi()),
             ])
-        )
+        
 })
 
 
