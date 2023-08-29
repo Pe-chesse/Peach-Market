@@ -39,7 +39,7 @@ services:
       - "8000:8000"
   uvicorn:
     container_name: uvicorn
-    command: uvicorn your_project_name.asgi:application --host 0.0.0.0 --port 8001
+    command: uvicorn peach_market.asgi:application --host 0.0.0.0 --port 8001
     build:
       context: ./
       dockerfile: Dockerfile
