@@ -29,8 +29,6 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-      args:
-        APP_NAME: web
     env_file:
       - .env
     expose:
@@ -46,8 +44,6 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-      args:
-        APP_NAME: uvicorn
     env_file:
       - .env
     ports:
@@ -56,9 +52,7 @@ services:
       - 8001
     entrypoint:
       - sh
-      - /home/app/uvicorn/config/docker/entrypoint-ws.prod.sh
-    depends_on:
-      - web
+      - /home/app/web/config/docker/entrypoint-ws.prod.sh
 
   nginx:
     container_name: nginx
