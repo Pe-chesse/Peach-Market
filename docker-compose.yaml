@@ -41,7 +41,9 @@ services:
 
   uvicorn:
     container_name: uvicorn
-    command: gunicorn peach_market.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8001
+    command:
+      - gunicorn peach_market.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8001
+      - uvicorn --reload peach_market.asgi
     build:
       context: ./
       dockerfile: Dockerfile
