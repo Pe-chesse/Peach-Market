@@ -16,6 +16,10 @@ if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
         
 class FirebaseAuthentication(authentication.BaseAuthentication):
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+
     def authenticate(self, request):
         auth_header = request.META.get("HTTP_AUTHORIZATION")
         if not auth_header:
@@ -45,7 +49,7 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
                 email=decoded_token.get("email")
             )
         request.user = user
-        session_middleware = SessionMiddleware()
+        session_middleware = SessionMiddleware(self.get_response)
         session_middleware.process_request(request)
         return (user, None)
     
