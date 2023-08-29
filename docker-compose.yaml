@@ -26,11 +26,11 @@ services:
 
   web:
     container_name: web
-    args:
-      APP_NAME: web
     build:
       context: ./
       dockerfile: Dockerfile
+      args:
+        APP_NAME: web
     env_file:
       - .env
     expose:
@@ -43,11 +43,11 @@ services:
 
   uvicorn:
     container_name: uvicorn
-    args:
-      APP_NAME: uvicorn
     build:
       context: ./
       dockerfile: Dockerfile
+      args:
+        APP_NAME: uvicorn
     env_file:
       - .env
     ports:
