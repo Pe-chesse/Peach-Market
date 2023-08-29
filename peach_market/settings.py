@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os,environ
-from corsheaders.defaults import default_headers
 
 from pathlib import Path
 
@@ -54,7 +53,6 @@ INSTALLED_APPS = [
     'bucket',
     'storages',
     'rest_framework',
-    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -103,10 +101,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 
 CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOW_HEADERS = list(default_headers) + [
-    'websocket',
-]
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
