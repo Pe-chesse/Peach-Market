@@ -5,15 +5,18 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from chat import routing
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "peach_market.settings")
+try:
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "peach_market.settings")
 
-django.setup()
+    django.setup()
 
-application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            routing.websocket_urlpatterns
-        )
-    ),
-})
+    application = ProtocolTypeRouter({
+        "http": get_asgi_application(),
+        "websocket": AuthMiddlewareStack(
+            URLRouter(
+                routing.websocket_urlpatterns
+            )
+        ),
+    })
+except Exception as e:
+    print(e)
