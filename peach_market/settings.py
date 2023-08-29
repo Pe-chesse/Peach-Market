@@ -10,7 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import os,environ,boto3
+import os,environ
+from corsheaders.defaults import default_headers
 
 from pathlib import Path
 
@@ -101,6 +102,10 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 
 CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'websocket',
+]
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
