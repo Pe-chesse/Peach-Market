@@ -70,7 +70,7 @@ SESSION_MIDDLEWARE = [
     'session_middleware.SessionMiddleware',
 ]
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
 ROOT_URLCONF = 'peach_market.urls'
 
