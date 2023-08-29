@@ -10,4 +10,4 @@ python manage.py migrate
 echo "Starting Gunicorn..."
 gunicorn peach_market.wsgi:application \
     --bind 0.0.0.0:8000 \
-    --workers 4
+    --workers 2
