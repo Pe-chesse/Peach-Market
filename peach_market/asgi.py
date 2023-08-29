@@ -11,7 +11,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'peach_market.settings')
 django.setup()
 
 application = ProtocolTypeRouter({
-    "http": get_asgi_application(),  # 일반 HTTP 요청을 처리하는 ASGI 핸들러
+    "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
         URLRouter([
             path("ws/v1/chat/", ChatConsumer.as_asgi()),

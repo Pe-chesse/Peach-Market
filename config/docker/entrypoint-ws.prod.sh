@@ -6,5 +6,5 @@ python manage.py collectstatic --no-input
 echo "Applying database migrations..."
 python manage.py migrate
 
-echo "Starting Uvicorn..."
-uvicorn peach_market.asgi:application --host 0.0.0.0 --port 8001
+echo "Starting daphne..."
+daphne -b 0.0.0.0 -p 8001 peach_market.asgi:application
