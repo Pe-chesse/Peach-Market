@@ -1,6 +1,8 @@
 import json, redis
 from peach_market.settings import env
 from channels.generic.websocket import  AsyncWebsocketConsumer
+from channels.sessions import channel_session
+from channels.auth import channel_session_user, channel_session_user_from_http
 from channels.db import database_sync_to_async
 from asgiref.sync import SyncToAsync
 from .models import ChatRoom,ChatMessage,ChatRoomMember
@@ -12,15 +14,18 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         super().__init__(*args, **kwargs)
         self.redis = redis.StrictRedis(host=env('REDIS_ADDRESS'), port=int(env('REDIS_PORT')), db=0, decode_responses=True)
 
+    @channel_session_user_from_http
     async def connect(self):
         self.room_group_name = f"base_{self.scope['user'].username}"
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
         await self.get_sync_message()
 
+    @channel_session_user_from_http
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
+    @channel_session_user_from_http
     async def receive(self, text_data):
         message_data = json.loads(text_data)
         match message_data.get('type'):
@@ -31,6 +36,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
             case 'deactive_chat':
                 await self.deactive_chat(message_data)
 
+    @channel_session_user_from_http
     async def chat_message(self, event):
         @database_sync_to_async
         def set_last_read(response):
@@ -51,6 +57,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         })
 
 
+    @channel_session_user_from_http
     async def get_sync_message(self,chat_room=None):
         try:
             @database_sync_to_async
@@ -74,6 +81,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         except Exception as e:
             print(e)
 
+    @channel_session_user_from_http
     async def receive_chat(self, message_data):
         @database_sync_to_async
         def get_room(request):
@@ -113,6 +121,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         await self.channel_layer.group_send(room_group_name, serializer.data)
         await self.get_sync_message(chat_room)
 
+    @channel_session_user_from_http
     async def active_chat(self,message_data):
         @database_sync_to_async
         def get_last_message(chat_room):
@@ -146,12 +155,15 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         except Exception as e:
             await self.send(text_data=json.dumps({'type':'error','message':e}))
 
+    @channel_session_user_from_http
     async def deactive_chat(self,message_data):
         room_group_name = f"chat_{message_data['request']['chat_room']}"
         await self.channel_layer.group_discard(room_group_name, self.channel_name)
 
+    @channel_session_user_from_http
     async def update_read(self, event):
         await self.send(text_data=json.dumps(event))
 
+    @channel_session_user_from_http
     async def sync_message(self, event):
         await self.send(text_data=json.dumps(event))

@@ -65,13 +65,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-SESSION_MIDDLEWARE = [
-    'django.middleware.session.SessionMiddleware',
-    'session_middleware.SessionMiddleware',
-]
-
-SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
-
 ROOT_URLCONF = 'peach_market.urls'
 
 TEMPLATES = [
