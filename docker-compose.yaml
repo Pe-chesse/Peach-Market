@@ -27,7 +27,7 @@ services:
   web:
     container_name: web
     environment:
-      - NAME=web
+      APP_NAME: "web"
     build:
       context: ./
       dockerfile: Dockerfile
@@ -44,7 +44,7 @@ services:
   uvicorn:
     container_name: uvicorn
     environment:
-      - NAME=uvicorn
+      APP_NAME: "uvicorn"
     build:
       context: ./
       dockerfile: Dockerfile
