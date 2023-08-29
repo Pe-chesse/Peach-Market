@@ -50,8 +50,6 @@ services:
   nginx:
     container_name: nginx
     build: ./config/nginx
-    volumes:
-      - static:/home/app/web/static
     ports:
       - "80:80"
     depends_on:
