@@ -12,7 +12,6 @@ RUN addgroup -S app && adduser -S app -G app
 # create the appropriate directories
 ENV HOME=/home/app
 ENV APP_HOME=/home/app/web
-ENV DJANGO_SETTINGS_MODULE=peach_market.settings.prod
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
