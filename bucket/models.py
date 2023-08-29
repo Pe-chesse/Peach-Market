@@ -24,7 +24,7 @@ class UserProfileImage(models.Model):
 
         try:
             s3.upload_fileobj(image, settings.AWS_STORAGE_BUCKET_NAME, image.name,ExtraArgs={"ACL": "public-read"})
-            return f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{image.name}'
+            return f'https://d1gq26ap11urh6.cloudfront.net/{image.name}'
         except NoCredentialsError:
             raise Exception('No AWS credentials provided')
     
@@ -51,7 +51,7 @@ class PostImage(models.Model):
 
         try:
             s3.upload_fileobj(image, settings.AWS_STORAGE_BUCKET_NAME, image.name,ExtraArgs={"ACL": "public-read"})
-            return f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{image.name}'
+            return f'https://d1gq26ap11urh6.cloudfront.net/{image.name}'
         except NoCredentialsError:
             raise Exception('No AWS credentials provided')
     
