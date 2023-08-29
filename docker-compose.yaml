@@ -30,8 +30,6 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
-    volumes:
-      - static:/home/app/web/static
     expose:
       - 8000
     entrypoint:
@@ -39,7 +37,16 @@ services:
       - /home/app/web/config/docker/entrypoint.prod.sh
     ports:
       - "8000:8000"
-
+  uvicorn:
+    container_name: uvicorn
+    command: uvicorn your_project_name.asgi:application --host 0.0.0.0 --port 8001
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    expose:
+      - 8001
   nginx:
     container_name: nginx
     build: ./config/nginx
@@ -51,6 +58,5 @@ services:
       - web
 
 volumes:
-  static:
   postgres_data:
   redis_data:
