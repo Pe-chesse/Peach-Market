@@ -65,8 +65,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cache" 
-SESSION_CACHE_ALIAS = "default" 
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 ROOT_URLCONF = 'peach_market.urls'
 
