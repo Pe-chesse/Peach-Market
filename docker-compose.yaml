@@ -23,6 +23,8 @@ services:
       - REDIS_LIST_MAX_ZIPLIST_ENTRIES=30
     volumes:
       - redis_data:/data
+    ports:
+      - "6379:6379"
 
   web:
     container_name: web
