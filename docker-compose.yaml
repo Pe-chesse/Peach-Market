@@ -28,7 +28,7 @@ services:
     container_name: web
     build:
       context: ./
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     env_file:
       - .env
     expose:
