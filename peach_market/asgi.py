@@ -10,7 +10,7 @@ from chat.consumers import ChatConsumer
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'peach_market.settings')
 
-application = get_asgi_application()
+django_asgi_app = get_asgi_application()
 
 application = ProtocolTypeRouter({
     # "http": django_asgi_app,
