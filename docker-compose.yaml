@@ -41,13 +41,13 @@ services:
     ports:
       - "8000:8000"
 
-  daphne:
-    container_name: daphne
+  uvicorn:
+    container_name: uvicorn
     build:
       context: ./
       dockerfile: Dockerfile
       args:
-        APP_NAME: daphne
+        APP_NAME: uvicorn
     env_file:
       - .env
     ports:
@@ -56,7 +56,7 @@ services:
       - 8001
     entrypoint:
       - sh
-      - /home/app/daphne/config/docker/entrypoint-ws.prod.sh
+      - /home/app/uvicorn/config/docker/entrypoint-ws.prod.sh
     depends_on:
       - web
 
@@ -67,7 +67,7 @@ services:
       - "80:80"
     depends_on:
       - web
-      - daphne
+      - uvicorn
 
 volumes:
   postgres_data:
