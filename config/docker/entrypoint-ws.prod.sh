@@ -7,4 +7,4 @@ echo "Applying database migrations..."
 python manage.py migrate
 
 echo "Starting Uvicorn..."
-uvicorn --reload peach_market.asgi:application --host 0.0.0.0 --port 8001
+gunicorn peach_market.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8001
