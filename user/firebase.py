@@ -1,3 +1,5 @@
+from django.contrib.sessions.middleware import SessionMiddleware
+from django.middleware.common import MiddlewareMixin
 from firebase_admin import auth
 import firebase_admin
 from django.contrib.auth import login
@@ -42,5 +44,9 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
                 username = uid,
                 email=decoded_token.get("email")
             )
-        login(request, user)
+        request.user = user
+        session_middleware = SessionMiddleware()
+        session_middleware.process_request(request)
         return (user, None)
+    
+
