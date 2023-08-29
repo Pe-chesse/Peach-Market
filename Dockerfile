@@ -21,6 +21,7 @@ RUN pip install -r requirements.txt
 
 # copy entrypoint-prod.sh
 COPY ./config/docker/entrypoint.prod.sh $APP_HOME/config/docker/entrypoint.prod.sh
+COPY ./config/docker/entrypoint-ws.prod.sh $APP_HOME/config/docker/entrypoint-ws.prod.sh
 
 # copy project
 COPY . $APP_HOME
