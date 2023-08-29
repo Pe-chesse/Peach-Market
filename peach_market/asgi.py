@@ -16,9 +16,13 @@ from chat.consumers import ChatConsumer
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
     "websocket": 
-        URLRouter([
-            path("ws/v1/chat/", ChatConsumer.as_asgi()),
-        ])
+    AllowedHostsOriginValidator(
+        AuthMiddlewareStack(
+            URLRouter([
+                path("ws/v1/chat/", ChatConsumer.as_asgi()),
+            ])
+        )
+    )
 })
 
 
