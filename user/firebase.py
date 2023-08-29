@@ -1,5 +1,6 @@
 from firebase_admin import auth
 import firebase_admin
+from django.contrib.auth import login
 from peach_market.settings import env
 from rest_framework import authentication
 from .exceptions import FirebaseError
@@ -41,4 +42,5 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
                 username = uid,
                 email=decoded_token.get("email")
             )
+        login(request, user)
         return (user, None)
