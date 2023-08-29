@@ -11,7 +11,7 @@ RUN addgroup -S app && adduser -S app -G app
 
 # create the appropriate directories
 ENV HOME=/home/app
-ENV APP_HOME=/home/app/web
+ENV APP_HOME=/home/app/$NAME
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
