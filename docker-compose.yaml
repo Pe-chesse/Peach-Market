@@ -23,6 +23,7 @@ services:
       - REDIS_LIST_MAX_ZIPLIST_ENTRIES=30
     volumes:
       - redis_data:/data
+
   web:
     container_name: web
     build:
@@ -37,9 +38,10 @@ services:
       - /home/app/web/config/docker/entrypoint.prod.sh
     ports:
       - "8000:8000"
+
   uvicorn:
     container_name: uvicorn
-    command: uvicorn peach_market.asgi:application --host 0.0.0.0 --port 8001
+    command: gunicorn peach_market.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8001
     build:
       context: ./
       dockerfile: Dockerfile
@@ -47,6 +49,7 @@ services:
       - .env
     expose:
       - 8001
+
   nginx:
     container_name: nginx
     build: ./config/nginx
