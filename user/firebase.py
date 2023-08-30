@@ -16,9 +16,6 @@ if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
         
 class FirebaseAuthentication(authentication.BaseAuthentication):
-    
-    def __init__(self, get_response):
-        self.get_response = get_response
 
     def authenticate(self, request):
         auth_header = request.META.get("HTTP_AUTHORIZATION")
@@ -49,8 +46,16 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
                 email=decoded_token.get("email")
             )
         request.user = user
-        session_middleware = SessionMiddleware(self.get_response)
-        session_middleware.process_request(request)
         return (user, None)
     
+    def authenticate_request(self, request, user):
+        # 세션 생성 및 관리
+        session_middleware = SessionMiddleware()
+        session_middleware.process_request(request)
+        
+        # 로그인 처리
+        login(request, user)
+
+        request.user = user
+        return user
 
