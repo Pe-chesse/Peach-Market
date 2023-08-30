@@ -4,6 +4,7 @@ from channels.generic.websocket import  AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from asgiref.sync import SyncToAsync
 from .models import ChatRoom,ChatMessage,ChatRoomMember
+from user.models import User
 from .serializers import ChatMessageSerializer,ChatRoomMembersSerializer,SyncMessageSerializer
 
 
@@ -13,13 +14,14 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         self.redis = redis.StrictRedis(host=env('REDIS_ADDRESS'), port=int(env('REDIS_PORT')), db=0, decode_responses=True)
 
     async def connect(self):
+        @database_sync_to_async
+        def get_user(uid):
+            self.user = User.objects.get(username = uid)
         await self.accept()
-        try:
-            self.room_group_name = f"base_{self.scope['user'].username}"
-            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-            await self.get_sync_message()
-        except:
-            await self.send(text_data=json.dumps(self.scope))        
+        await get_user(self.scope['subprotocols'])
+        self.room_group_name = f"base_{self.user}"
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.get_sync_message() 
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
@@ -38,7 +40,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         @database_sync_to_async
         def set_last_read(response):
             print(response)
-            member = ChatRoomMember.objects.get(chat_room = response['chat_room'],user = self.scope["user"])
+            member = ChatRoomMember.objects.get(chat_room = response['chat_room'],user = self.user)
             last_message = ChatMessage.objects.get(num = response['num'],chat_room = response['chat_room'])
             member.last_read = last_message
             member.save()
@@ -49,7 +51,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         await self.channel_layer.group_send(f'chat_{response["chat_room"]}', {
             'type' : 'update.read',
             'chat_room' : response['chat_room'],
-            'user' : self.scope["user"].email,
+            'user' : self.user.email,
             'read' : response['num']
         })
 
@@ -72,7 +74,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
                     serializer_data = await get_sync_data(user)
                     await self.channel_layer.group_send(f'base_{user.username}', {'type' : 'sync.message','data':serializer_data})  
             else :
-                serializer_data = await get_sync_data(self.scope['user'])
+                serializer_data = await get_sync_data(self.user)
                 await self.channel_layer.group_send(self.room_group_name, {'type' : 'sync.message','data':serializer_data})
         except Exception as e:
             print(e)
@@ -106,7 +108,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         chat_room = await get_room(message_data['request'])
         message = await create_message(
                     chat_room = chat_room,
-                    sender = self.scope['user'],
+                    sender = self.user,
                     content = message_data['content']
                 )
         
@@ -121,7 +123,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         def get_last_message(chat_room):
             try:
                 chat_room_object = ChatRoom.objects.get(name = chat_room)
-                member = ChatRoomMember.objects.get(chat_room = chat_room,user = self.scope["user"])
+                member = ChatRoomMember.objects.get(chat_room = chat_room,user = self.user)
                 member.last_read = chat_room_object.last_message
                 member.save()
                 return chat_room_object.last_message.num if chat_room_object.last_message else 0
@@ -140,7 +142,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
             await self.channel_layer.group_send(room_group_name, {
                 'type' : 'update.read',
                 'chat_room' : message_data['request']['chat_room'],
-                'user' : self.scope["user"].email,
+                'user' : self.user.email,
                 'read' : await get_last_message(message_data['request']['chat_room'])
             })
             members_data = await get_users_info(message_data['request']['chat_room'])
