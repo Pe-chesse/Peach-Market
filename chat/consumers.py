@@ -18,7 +18,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         def get_user(uid):
             return User.objects.get(username = user)
         
-        user = await get_user(self.self.scope["url_route"]["kwargs"]["room_name"])
+        user = await get_user(self.scope["url_route"]["kwargs"]["room_name"])
         self.user = user
         self.room_group_name = f"base_{self.user}"
 
