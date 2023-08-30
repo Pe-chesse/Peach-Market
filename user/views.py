@@ -9,8 +9,11 @@ from post.utils.permissions import CustomPermission,CustomAuthentication
 class ProtectedApiView(APIView):
 
     def get(self, request):
-        user = request.user 
-        return Response({"message": f"Authenticated user: {user.username}"})
+        try:
+            serialized_user = UserProfileSerializer(request.user)
+            return Response(serialized_user.data,200)
+        except Exception as e:
+            return Response({'error' : e},403)
 
 class NicknameVerifyApiView(APIView):
     permission_classes = [CustomPermission]
