@@ -13,10 +13,13 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         self.redis = redis.StrictRedis(host=env('REDIS_ADDRESS'), port=int(env('REDIS_PORT')), db=0, decode_responses=True)
 
     async def connect(self):
-        self.room_group_name = f"base_{self.scope['user'].username}"
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
-        await self.get_sync_message()
+        try:
+            self.room_group_name = f"base_{self.scope['user'].username}"
+            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+            await self.get_sync_message()
+        except:
+            await self.send(text_data=json.dumps(self.scope))        
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)

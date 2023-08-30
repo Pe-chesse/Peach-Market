@@ -47,15 +47,3 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
             )
         request.user = user
         return (user, None)
-    
-    def authenticate_request(self, request, user):
-        # 세션 생성 및 관리
-        session_middleware = SessionMiddleware()
-        session_middleware.process_request(request)
-        
-        # 로그인 처리
-        login(request, user)
-
-        request.user = user
-        return user
-
