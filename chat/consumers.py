@@ -16,14 +16,18 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
     async def connect(self):
         @database_sync_to_async
         def get_user(uid):
-            self.user = User.objects.get(username = uid)
+            return User.objects.get(username = user)
         
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        await self.accept()
-        await get_user(self.self.scope["url_route"]["kwargs"]["room_name"])
+        user = await get_user(self.self.scope["url_route"]["kwargs"]["room_name"])
+
+        self.user = user
         self.room_group_name = f"base_{self.user}"
+
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        await self.get_sync_message() 
+
+        await self.accept()
+        await self.get_sync_message()
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
