@@ -20,7 +20,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         
         user = await get_user(self.scope["url_route"]["kwargs"]["room_name"])
         self.user = user
-        self.room_group_name = f"base_{self.user}"
+        self.room_group_name = f"base_{self.user.username}"
 
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
 
