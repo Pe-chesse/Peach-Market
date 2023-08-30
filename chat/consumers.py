@@ -16,7 +16,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
     async def connect(self):
         @database_sync_to_async
         def get_user(uid):
-            return User.objects.get(username = user)
+            return User.objects.get(username = uid)
         
         user = await get_user(self.scope["url_route"]["kwargs"]["room_name"])
         self.user = user
