@@ -167,9 +167,10 @@ class PostAPIView(APIView):
 
 class LikeAPIView(APIView):
     
-    def get(self, request,pk):
+    def post(self, request):
         try:
-            like = Like.objects.filter(user = request.user.pk,post = pk)
+            post = request.data.get('post')
+            like = Like.objects.filter(user = request.user.pk,post = post)
             if like.count() == 0:
                 raise Exception('좋아요 없음')
             for i in like.all():
@@ -177,7 +178,7 @@ class LikeAPIView(APIView):
             return Response(status=200)
         except Exception as e:
             try:
-                Like.objects.create(user = request.user.pk,post = pk)
+                Like.objects.create(user = request.user.pk,post = post)
                 return Response(status=201)
             except Exception as e:
                 return Response(e,status=400)

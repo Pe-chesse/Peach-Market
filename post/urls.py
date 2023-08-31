@@ -12,7 +12,7 @@ urlpatterns =[
     
     path('<int:pk>/', views.PostAPIView.as_view()),
     # 좋아요
-    path('<int:pk>/like/',views.LikeAPIView.as_view()),
+    path('like/',views.LikeAPIView.as_view()),
     # <Comment - 댓글>
     path('comment/<int:comment_id>/', views.CommentDetailView.as_view()),
     
