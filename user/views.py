@@ -4,6 +4,8 @@ from .serializers import UserProfileSerializer , FollowSerializer, PublicUserSer
 from bucket.utils.upload import upload_redis_to_bucket
 from rest_framework import status
 from .models import User
+from post.models import Post
+from post.serializers import PostListSerializer
 from post.utils.permissions import CustomPermission,CustomAuthentication
 from django.db.models import Q
 
@@ -39,15 +41,20 @@ class UserApiView(APIView):
         try:
             target = request.GET.get('user',"")
             if not target:
-                user = request.user
-            else:
-                try:
-                    user = User.objects.get(nickname = target)
-                except:
-                    return Response(status=404)
+                return Response(status = 404);
+            try:
+                user = User.objects.get(nickname = target)
+                posts = Post.objects.filter(user = user)
+
+                serialized_user = UserProfileSerializer(user)
+                serialized_posts = PostListSerializer(posts,many = True)
+                return Response({
+                    'user': serialized_user.data,
+                    'post': serialized_posts.data,
+                })
+            except:
+                return Response(status = 404)
                 
-            serialized_user = UserProfileSerializer(user)
-            return Response(serialized_user.data)
         except Exception as e:
             return Response(e,400)
     
