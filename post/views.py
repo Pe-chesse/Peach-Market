@@ -175,11 +175,11 @@ class LikeAPIView(APIView):
                 raise Exception('좋아요 없음')
             for i in like:
                 i.delete()
-            return Response('좋아요 취소',status=200)
+            return Response(status=200)
         except Exception as e:
             try:
                 Like.objects.create(user = request.user.pk,post = pk)
-                return Response('좋아요',status=201)
+                return Response(status=201)
             except Exception as e:
                 return Response(e,status=400)
 
