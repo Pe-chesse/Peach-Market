@@ -35,7 +35,7 @@ class PostListSerializer(serializers.ModelSerializer):
     def get_is_like(self, obj):
         try:
             request_user = self.request.user
-            return obj.like_set.filter(user=request_user).exists()
+            return obj.like_set.filter(user=request_user.pk).exists()
         except:
             return False
         
@@ -73,7 +73,7 @@ class PostViewSerializer(serializers.ModelSerializer):
     def get_is_like(self, obj):
         try:
             request_user = self.request.user
-            return obj.like_set.filter(user=request_user).exists()
+            return obj.like_set.filter(user=request_user.pk).exists()
         except:
             return False
     
