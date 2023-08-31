@@ -1,7 +1,6 @@
 # 데이터 처리
 from .models import Product, Post, Comment,Like
-from .serializers import ProductSerializer, PostSerializer, PostListSerializer, CommentCreateSerializer,PostViewSerializer,LikeSerializer
-from user.serializers import PublicUserSerializer
+from .serializers import ProductSerializer, PostSerializer, PostListSerializer, CommentCreateSerializer,PostViewSerializer
 from bucket.utils.upload import upload_redis_to_bucket
 # APIView
 from rest_framework.views import APIView
