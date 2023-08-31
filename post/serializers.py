@@ -34,9 +34,10 @@ class PostListSerializer(serializers.ModelSerializer):
     
     def get_is_like(self, obj):
         try:
-            request_user = self.request.user
-            return obj.like_set.filter(user=request_user.pk).exists()
-        except:
+            obj.like_set.get(user=self.request.user)
+            return True
+        except Exception as e:
+            print(e)
             return False
         
     
@@ -72,9 +73,10 @@ class PostViewSerializer(serializers.ModelSerializer):
     
     def get_is_like(self, obj):
         try:
-            request_user = self.request.user
-            return obj.like_set.filter(user=request_user.pk).exists()
-        except:
+            obj.like_set.get(user=self.request.user)
+            return True
+        except Exception as e:
+            print(e)
             return False
     
     def get_image_url(self, obj):
