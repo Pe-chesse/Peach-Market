@@ -170,14 +170,16 @@ class LikeAPIView(APIView):
     
     def post(self, request):
         try:
-            post = request.data.get('post')
-            like = Like.objects.filter(user=request.user.pk, post=post)
+            pk = request.data.get('post')
+            post = Post.objects.get(pk=pk)  # Post 모델에서 해당 post_id에 해당하는 인스턴스 가져오기
+            
+            like = Like.objects.filter(user=request.user.pk, post=post.pk)
             
             if like.exists():
                 like.delete() 
                 return Response(status=200) 
                 
-            Like.objects.create(user=request.user.pk, post=post) 
+            Like.objects.create(user=request.user.pk, post=post.pk) 
             return Response(status=201) 
         
         except Exception as e:
