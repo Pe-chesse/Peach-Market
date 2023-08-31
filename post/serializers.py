@@ -53,13 +53,13 @@ class PostViewSerializer(serializers.ModelSerializer):
         super(PostViewSerializer, self).__init__(*args, **kwargs)
     user = PublicUserSerializer()
     comment_set = serializers.SerializerMethodField()
-    like_set_length = serializers.SerializerMethodField()
+    like_length = serializers.SerializerMethodField()
     is_like = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id','body','user','image_url','updated_at','created_at','comment_set','like_set_length','is_like']
+        fields = ['id','body','user','image_url','updated_at','created_at','comment_set','like_length','is_like']
 
     def get_comment_set(self, obj):
         comment_set = obj.comment_set.filter(status = False,parent_comment = None)
@@ -67,7 +67,7 @@ class PostViewSerializer(serializers.ModelSerializer):
         serializer = CommentViewSerializer(comment_set, many=True,context={'request': self.request})
         return serializer.data
     
-    def get_like_set_length(self, obj):
+    def get_like_length(self, obj):
         return obj.like_set.count()
     
     def get_is_like(self, obj):
