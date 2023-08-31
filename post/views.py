@@ -165,24 +165,23 @@ class PostAPIView(APIView):
             print(e)
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
+
 class LikeAPIView(APIView):
     
     def post(self, request):
         try:
             post = request.data.get('post')
-            like = Like.objects.filter(user = request.user.pk,post = post)
-            if like.count() == 0:
-                raise Exception('좋아요 없음')
-            for i in like.all():
-                i.delete()
-            return Response(status=200)
+            like = Like.objects.filter(user=request.user.pk, post=post)
+            
+            if like.exists():
+                like.delete() 
+                return Response(status=200) 
+                
+            Like.objects.create(user=request.user.pk, post=post) 
+            return Response(status=201) 
+        
         except Exception as e:
-            try:
-                Like.objects.create(user = request.user.pk,post = post)
-                return Response(status=201)
-            except Exception as e:
-                return Response(e,status=400)
-
+            return Response(str(e), status=400) 
 
 
 # 댓글 수정, 삭제
