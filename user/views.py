@@ -44,7 +44,7 @@ class UserApiView(APIView):
                 return Response(status = 404);
             try:
                 user = User.objects.get(nickname = target)
-                posts = Post.objects.filter(user = user)
+                posts = Post.objects.filter(user = user.pk)
 
                 serialized_user = UserProfileSerializer(user)
                 serialized_posts = PostListSerializer(posts,many = True)
@@ -53,7 +53,7 @@ class UserApiView(APIView):
                     'post': serialized_posts.data,
                 })
             except:
-                return Response(status = 404)
+                return Response(status = 400)
                 
         except Exception as e:
             return Response(e,400)
@@ -126,7 +126,7 @@ class UserSearchAPIView(APIView):
     permission_classes = [CustomPermission]
     authentication_classes = [CustomAuthentication]
 
-    def get(self,request, nickname):
+    def get(self,request):
         user = request.GET.get('user',"")
         try:
             users = User.objects.filter(Q(user__nickname__icontains=user))
