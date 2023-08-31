@@ -5,6 +5,7 @@ from bucket.utils.upload import upload_redis_to_bucket
 from rest_framework import status
 from .models import User
 from post.utils.permissions import CustomPermission,CustomAuthentication
+from django.db.models import Q
 
 class ProtectedApiView(APIView):
 
@@ -112,3 +113,17 @@ class FollowAPIView(APIView):
             except:
                 return Response("해당 유저를 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
             
+
+class UserSearchAPIView(APIView):
+    
+    permission_classes = [CustomPermission]
+    authentication_classes = [CustomAuthentication]
+
+    def get(self,request, nickname):
+        user = request.GET.get('user',"")
+        try:
+            users = User.objects.filter(Q(user__nickname__icontains=user))
+            serializer = PublicUserSerializer(users,many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response("해당 유저를 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)

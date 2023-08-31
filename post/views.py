@@ -7,7 +7,6 @@ from bucket.utils.upload import upload_redis_to_bucket
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Q
 # user
 from rest_framework.permissions import AllowAny
 from post.utils.permissions import CustomPermission,CustomAuthentication
@@ -243,23 +242,3 @@ class CommentDetailView(APIView):
 
         except:
             return Response("댓글을 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
-
-
-class PostSearchAPIView(APIView):
-    
-    authentication_classes = []
-    permission_classes = [AllowAny] 
-
-    def get(self, request, format=None):
-        search_query = request.data.get("search_query")
-        
-        queryset = Post.objects.all()
-        
-        if search_query:
-            queryset = queryset.filter(
-                Q(user__nickname__icontains=search_query) |
-                Q(body__icontains=search_query)
-            )
-        
-        serializer = PostListSerializer(queryset, many=True,context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)

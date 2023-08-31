@@ -17,7 +17,6 @@ urlpatterns =[
     path('<int:pk>/like/',views.LikeAPIView.as_view()),
     # <Comment - 댓글>
     path('comment/<int:comment_id>/', views.CommentDetailView.as_view()),
-    path('search/', PostSearchAPIView.as_view()),
     
     # <Product - 상품>
     # 상품 목록 조회
