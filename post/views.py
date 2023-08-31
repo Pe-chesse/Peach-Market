@@ -176,20 +176,16 @@ class LikeAPIView(APIView):
         try:
             like = Like.objects.filter(user = request.user.pk,post = pk)
             if len(like) == 0:
-                raise
+                raise Exception('좋아요 없음')
             for i in like:
                 i.delete()
-            return Response('좋아요 취소',status=status.HTTP_204_NO_CONTENT)
+            return Response('좋아요 취소',status=200)
         except Exception as e:
-            print(e)
             try:
-                like = LikeSerializer(data=like_data)
-                if like.is_valid():
-                    like.save()
-                    return Response('좋아요',status=status.HTTP_201_OK)
-                return Response(like.errors, status=400)
+                Like.objects.create(user = request.user.pk,post = pk)
+                return Response('좋아요',status=status.201)
             except Exception as e:
-                return Response(e,status=status.HTTP_404_NOT_FOUND)
+                return Response(e,status=400)
 
 
 
