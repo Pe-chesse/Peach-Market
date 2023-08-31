@@ -41,7 +41,7 @@ class UserApiView(APIView):
         try:
             target = request.GET.get('user',"")
             if not target:
-                return Response(status = 404);
+                return Response(status = 404)
             try:
                 user = User.objects.get(nickname = target)
                 posts = Post.objects.filter(user = user.pk)
