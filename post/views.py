@@ -171,7 +171,7 @@ class LikeAPIView(APIView):
     def get(self, request,pk):
         try:
             like = Like.objects.filter(user = request.user.pk,post = pk)
-            if len(like) == 0:
+            if like.count() == 0:
                 raise Exception('좋아요 없음')
             for i in like.all():
                 i.delete()
