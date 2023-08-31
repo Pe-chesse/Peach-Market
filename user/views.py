@@ -47,7 +47,7 @@ class UserApiView(APIView):
                 posts = Post.objects.filter(user = user.pk)
 
                 serialized_user = UserProfileSerializer(user)
-                serialized_posts = PostListSerializer(posts,many = True)
+                serialized_posts = PostListSerializer(posts,many = True,context={'request': request})
                 return Response({
                     'user': serialized_user.data,
                     'post': serialized_posts.data,
@@ -129,7 +129,7 @@ class UserSearchAPIView(APIView):
     def get(self,request):
         user = request.GET.get('user',"")
         try:
-            users = User.objects.filter(Q(user__nickname__icontains=user))
+            users = User.objects.filter(Q(nickname__icontains=user))
             serializer = PublicUserSerializer(users,many=True)
             return Response(serializer.data)
         except Exception as e:
