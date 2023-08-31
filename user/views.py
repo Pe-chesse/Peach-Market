@@ -35,17 +35,20 @@ class UserApiView(APIView):
 
     def get(self, request):
 
-        target = request.GET.get('user',"")
-        if not target:
-            user = request.user
-        else:
-            try:
-                user = User.objects.get(nickname = target)
-            except:
-                return Response(status=404)
-            
-        serialized_user = UserProfileSerializer(user)
-        return Response(serialized_user.data)
+        try:
+            target = request.GET.get('user',"")
+            if not target:
+                user = request.user
+            else:
+                try:
+                    user = User.objects.get(nickname = target)
+                except:
+                    return Response(status=404)
+                
+            serialized_user = UserProfileSerializer(user)
+            return Response(serialized_user.data)
+        except Exception as e:
+            return Response(e,400)
     
     def put(self, request):
         user = request.user
