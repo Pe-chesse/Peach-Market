@@ -111,13 +111,14 @@ class FollowAPIView(APIView):
                 return Response("본인 팔로우 불가", status=status.HTTP_400_BAD_REQUEST)
             try:
                 me.followings.get(pk=you.pk)
-                me.followings.remove(you)
-                serializer = PublicUserSerializer(me.followings.followers, many=True)
-                return Response(serializer.data, status=200)
             except:
                 me.followings.add(you)
                 serializer = PublicUserSerializer(me.followings.followers, many=True)
                 return Response(serializer.data, status=201)
+            else:
+                me.followings.remove(you)
+                serializer = PublicUserSerializer(me.followings.followers, many=True)
+                return Response(serializer.data, status=200)
         except:
             return Response("해당 유저를 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
             
