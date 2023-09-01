@@ -55,7 +55,10 @@ class ChatRoomMembersSerializer(serializers.ModelSerializer):
         fields = ['user_image_url','user_nickname','user_email','last_read_num']
 
     def get_user_image_url(self, obj):
-        return obj.user.image_url
+        try:
+            return obj.user.image_url.profile_image.name
+        except:
+            return None
     
     def get_user_email(self, obj):
         return obj.user.email
