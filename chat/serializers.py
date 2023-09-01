@@ -78,7 +78,7 @@ class SyncMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChatRoomMember
-        fields = ['chat_room','last_read','last_message']
+        fields = ['chat_room','last_read','members','last_message']
 
     def get_last_message(self, obj):
         chat_room = ChatRoom.objects.get(name = obj.chat_room)
@@ -89,3 +89,8 @@ class SyncMessageSerializer(serializers.ModelSerializer):
     
     def get_last_read(self, obj):
         return obj.last_read.num if obj.last_read else 0
+    
+    def get_members(self, obj):
+        chat_rooms = ChatRoomMember.objects.filter(chat_room = obj.chat_room)
+        serializer = ChatRoomMembersSerializer(chat_rooms,many = True)
+        return serializer.data
