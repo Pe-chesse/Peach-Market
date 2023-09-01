@@ -202,7 +202,7 @@ class CommentDetailView(APIView):
                 return Response(serializer.data,status=201)
             return Response(serializer.errors, status=status.HTTP_400_BA_REQUEST)
         except Exception as e:
-            return Response(e, status=status.HTTP_404_NOT_FOUND)
+            return Response(str(e), status=status.HTTP_404_NOT_FOUND)
     
     def put(self, request, comment_id):
         try:

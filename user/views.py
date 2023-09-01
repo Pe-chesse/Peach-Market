@@ -56,7 +56,7 @@ class UserApiView(APIView):
                 return Response(status = 400)
                 
         except Exception as e:
-            return Response(e,400)
+            return Response(str(e),400)
     
     def put(self, request):
         user = request.user
@@ -113,9 +113,11 @@ class FollowAPIView(APIView):
 
                 if me.followings.filter(pk=you.pk).exists():
                     me.followings.remove(you)
-                    return Response(status=204)
+                    serializer = PublicUserSerializer(me.followings.followers,many=True)
+                    return Response(serializer.data,status=200)
                 else:
                     me.followings.add(you)
+                    serializer = PublicUserSerializer(me.followings.followers,many=True)
                 return Response(serializer.data, status=201)
             except:
                 return Response("해당 유저를 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)

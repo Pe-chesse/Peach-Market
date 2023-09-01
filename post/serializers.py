@@ -21,6 +21,7 @@ class PostListSerializer(serializers.ModelSerializer):
     comment_length = serializers.SerializerMethodField()
     like_length = serializers.SerializerMethodField()
     is_like = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
     
     class Meta:
         model = Post
@@ -39,6 +40,9 @@ class PostListSerializer(serializers.ModelSerializer):
         except Exception as e:
             print(e)
             return False
+        
+    def get_image_url(self, obj):
+        return [i.image.name for i in obj.image_url.all()]
         
     
 class PostSerializer(serializers.ModelSerializer):
