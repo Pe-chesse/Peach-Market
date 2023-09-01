@@ -119,7 +119,8 @@ class FollowAPIView(APIView):
                 me.followings.remove(you)
                 serializer = PublicUserSerializer(me.followings.followers, many=True)
                 return Response(serializer.data, status=200)
-        except:
+        except Exception as e:
+            print(e)
             return Response("해당 유저를 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
             
 
