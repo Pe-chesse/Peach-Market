@@ -113,11 +113,11 @@ class FollowAPIView(APIView):
                 me.followings.get(pk=you.pk)
             except:
                 me.followings.add(you)
-                serializer = PublicUserSerializer(me.followings.followers, many=True)
+                serializer = PublicUserSerializer(me.followings.data, many=True)
                 return Response(serializer.data, status=201)
             else:
                 me.followings.remove(you)
-                serializer = PublicUserSerializer(me.followings.followers, many=True)
+                serializer = PublicUserSerializer(me.followings.data, many=True)
                 return Response(serializer.data, status=200)
         except Exception as e:
             print(e)
