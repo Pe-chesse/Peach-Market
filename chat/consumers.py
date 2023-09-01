@@ -151,7 +151,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
             })
             members_data = await get_users_info(message_data['request']['chat_room'])
             messages = [json.loads(i) for i in self.redis.lrange(room_group_name, 0, -1)]
-            await self.send(text_data=json.dumps({'type':'chat_room.info','members':members_data,'messages':messages}))
+            await self.send(text_data=json.dumps({'type':'chat_room.info','name':message_data['request']['chat_room'],'members':members_data,'messages':messages}))
         except Exception as e:
             await self.send(text_data=json.dumps({'type':'error','message':e}))
 

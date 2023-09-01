@@ -2,8 +2,8 @@ import hashlib
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import render
-from .models import ChatRoom,User,ChatMessage
-from .serializers import ChatMessageSerializer
+from .models import ChatRoom,User,ChatMessage,ChatRoomMember
+from .serializers import ChatMessageSerializer,ChatRoomMembersSerializer
 
 def chat_room(req, room_name):
     return render(req, "chat/chat_room.html", {"room_name": room_name})
@@ -13,6 +13,28 @@ class ChatRoomAPIView(APIView):
 
     def post(self, request):
         try:
+            def get_members(room_name):
+                members = ChatRoomMember.objects.filter(chat_room = room_name)
+                members_data = ChatRoomMembersSerializer(members,many = True)
+                return members_data.data
+            
+            def get_messages(room_name):
+                chat_messages = ChatMessage.objects.filter(
+                chat_room=room_name
+                ).order_by('-num')[:30]
+                
+                if chat_messages.count() == 0:
+                    return []
+                elif chat_messages.count() < 30:
+                    limit = chat_messages.count()
+                else:
+                    limit = 30
+
+                chat_messages = chat_messages[:limit][::-1]
+
+                serializer = ChatMessageSerializer(chat_messages, many=True)
+                return serializer.data
+
             target_nickname = request.data.get('nickname')
             target_user = User.objects.get(nickname = target_nickname)
             format_room = sorted([target_user,request.user],key=lambda x:x.pk)
@@ -26,8 +48,14 @@ class ChatRoomAPIView(APIView):
             except:
                 chat_room = ChatRoom.objects.create(name = room_name)
                 chat_room.users.set(format_room)
+
             
-            return Response(chat_room.name,status=200)
+            
+            return Response({
+                'name':chat_room.name,
+                'members':get_members(chat_room.name),
+                'messages':get_messages(chat_room.name),
+            },status=200)
         
         except Exception as e:
             return Response(status=400)
