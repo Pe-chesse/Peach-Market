@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import UserProfileSerializer , FollowSerializer, PublicUserSerializer
+from .serializers import UserProfileSerializer, PublicUserSerializer
 from bucket.utils.upload import upload_redis_to_bucket
 from rest_framework import status
 from .models import User
@@ -104,13 +104,12 @@ class FollowAPIView(APIView):
             return Response("해당 유저를 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, nickname):
+        try:
             me = request.user
             you = User.objects.get(nickname=nickname)
+            if me == you:
+                return Response("본인 팔로우 불가", status=status.HTTP_400_BAD_REQUEST)
             try:
-                serializer = FollowSerializer(me)
-                if me == you:
-                    return Response("본인 팔로우 불가", status=status.HTTP_400_BAD_REQUEST)
-
                 if me.followings.filter(pk=you.pk).exists():
                     me.followings.remove(you)
                     serializer = PublicUserSerializer(me.followings.followers,many=True)
@@ -120,7 +119,9 @@ class FollowAPIView(APIView):
                     serializer = PublicUserSerializer(me.followings.followers,many=True)
                 return Response(serializer.data, status=201)
             except:
-                return Response("해당 유저를 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
+                return Response("올바르지 않은 요청 또는 오류", status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response("해당 유저를 찾을 수 없습니다.", status=status.HTTP_404_NOT_FOUND)
             
 
 class UserSearchAPIView(APIView):

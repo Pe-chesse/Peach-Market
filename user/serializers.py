@@ -34,8 +34,3 @@ class PublicUserSerializer(serializers.ModelSerializer):
         except:
             return None
 
-
-class FollowSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('nickname','followings')
