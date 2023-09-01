@@ -75,6 +75,7 @@ class ChatRoomMembersSerializer(serializers.ModelSerializer):
 class SyncMessageSerializer(serializers.ModelSerializer):
     last_message = serializers.SerializerMethodField()
     last_read = serializers.SerializerMethodField()
+    members = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoomMember
