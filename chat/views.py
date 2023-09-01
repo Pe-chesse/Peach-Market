@@ -49,8 +49,6 @@ class ChatRoomAPIView(APIView):
                 chat_room = ChatRoom.objects.create(name = room_name)
                 chat_room.users.set(format_room)
 
-            
-            
             return Response({
                 'name':chat_room.name,
                 'members':get_members(chat_room.name),
@@ -58,6 +56,7 @@ class ChatRoomAPIView(APIView):
             },status=200)
         
         except Exception as e:
+            print(e)
             return Response(status=400)
         
 
