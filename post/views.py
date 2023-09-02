@@ -162,7 +162,6 @@ class PostAPIView(APIView):
                 return Response(serializer.data, 201)
             return Response(serializer.errors, status=status.HTTP_400_BA_REQUEST)
         except Exception as e:
-            print(e)
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
 

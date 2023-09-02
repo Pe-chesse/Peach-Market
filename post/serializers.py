@@ -38,7 +38,6 @@ class PostListSerializer(serializers.ModelSerializer):
             obj.like_set.get(user=self.request.user)
             return True
         except Exception as e:
-            print(e)
             return False
         
     def get_image_url(self, obj):
@@ -80,7 +79,6 @@ class PostViewSerializer(serializers.ModelSerializer):
             obj.like_set.get(user=self.request.user)
             return True
         except Exception as e:
-            print(e)
             return False
     
     def get_image_url(self, obj):
