@@ -81,6 +81,18 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
                             body=message_data['content']
                         ),
                         token=user.device_token
+                        android=messaging.AndroidConfig(
+                            priority="high",
+                            notification=messaging.AndroidNotification(
+                                channel_id="peacheese"
+                            ),
+                        ),
+                        apns=messaging.APNSConfig(
+                            headers={"apns-priority": "10"},
+                            payload=messaging.APNSPayload(
+                                aps=messaging.Aps(content_available=True),
+                            ),
+                        ),
                     )
                     try:
                         messaging.send(message)  # 비동기로 호출
