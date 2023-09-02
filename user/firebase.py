@@ -19,7 +19,7 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
 
     def authenticate(self, request):
         auth_header = request.META.get("HTTP_AUTHORIZATION")
-        fcm_token = request.META.get("HTTP_FCM_TOKEN","")
+        fcm_token = request.META.get("HTTP_FCMTOKEN","")
         print(request.META)
         if not auth_header:
             raise NoAuthToken("No auth token provided")

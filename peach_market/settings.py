@@ -104,10 +104,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOW_HEADERS = list(default_headers) + [
-    'HTTP_FCM_TOKEN'
-]
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
