@@ -14,6 +14,13 @@ class CustomPermission(BasePermission):
 class CustomAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         if request.method == 'GET':
+            auth_header = request.META.get("HTTP_AUTHORIZATION")
+            if auth_header:
+                try:
+                    return FirebaseAuthentication.authenticate(self,request)
+                except:
+                    pass
             pass
+
         else:
             return FirebaseAuthentication.authenticate(self,request)
