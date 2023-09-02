@@ -83,7 +83,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
                         token=user.device_token
                     )
                     try:
-                        response = messaging.send(message)
+                        messaging.send(message)
                     except:
                         pass
             
