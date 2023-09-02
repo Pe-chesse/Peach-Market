@@ -73,6 +73,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
                 user_list = chat_room.users.all()
                 return list(user_list)
             
+            @SyncToAsync
             def send_fcm_message(user):
                 if user.device_token and message_data['sender'] != user.nickname:
                     message = messaging.Message(
