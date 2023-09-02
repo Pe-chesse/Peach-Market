@@ -80,6 +80,9 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
                             title=message_data['sender'],
                             body=message_data['content']
                         ),
+                        data={
+                            'room_name':chat_room.name
+                        }
                         token=user.device_token,
                         android=messaging.AndroidConfig(
                             priority="high",
