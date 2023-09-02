@@ -1,5 +1,6 @@
 import json, redis
 from peach_market.settings import env
+from firebase_admin import messaging
 from channels.generic.websocket import  AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from asgiref.sync import SyncToAsync
@@ -60,7 +61,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         })
 
 
-    async def get_sync_message(self,chat_room=None):
+    async def get_sync_message(self,chat_room=None,message_data=None):
         try:
             @database_sync_to_async
             def get_sync_data(user):
@@ -72,11 +73,26 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
                 user_list = chat_room.users.all()
                 return list(user_list)
             
+            def send_fcm_message(user):
+                if user.device_token and message_data['sender'] != user.nickname:
+                    message = messaging.Message(
+                        notification=messaging.Notification(
+                            title=message_data['sender'],
+                            body=message_data['content']
+                        ),
+                        token=user.device_token
+                    )
+                    try:
+                        response = messaging.send(message)
+                    except:
+                        pass
+            
             if chat_room:
                 user_list = await get_user_list()
                 for user in user_list:
                     serializer_data = await get_sync_data(user)
                     await self.channel_layer.group_send(f'base_{user.username}', {'type' : 'sync.message','data':serializer_data})  
+                    await send_fcm_message(user)
             else :
                 serializer_data = await get_sync_data(self.user)
                 await self.channel_layer.group_send(self.room_group_name, {'type' : 'sync.message','data':serializer_data})
@@ -120,7 +136,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
         room_group_name = f"chat_{message_data['request']['chat_room']}"
         await save_message(room_group_name, serializer.data)
         await self.channel_layer.group_send(room_group_name, serializer.data)
-        await self.get_sync_message(chat_room)
+        await self.get_sync_message(chat_room,{"sender":self.user.nickname,'chat_room':message_data['request']['chat_room'],'content':message_data['content']})
 
     async def active_chat(self,message_data):
         @database_sync_to_async
