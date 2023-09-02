@@ -82,7 +82,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
                         token=user.device_token
                     )
                     try:
-                        await messaging.send(message)  # 비동기로 호출
+                        messaging.send(message)  # 비동기로 호출
                     except Exception as e:
                         print(f"FCM send error: {e}")
             
