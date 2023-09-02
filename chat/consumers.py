@@ -80,7 +80,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
                             title=message_data['sender'],
                             body=message_data['content']
                         ),
-                        token=user.device_token
+                        token=user.device_token,
                         android=messaging.AndroidConfig(
                             priority="high",
                             notification=messaging.AndroidNotification(
