@@ -44,7 +44,6 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
     async def chat_message(self, event):
         @database_sync_to_async
         def set_last_read(response):
-            print(response)
             member = ChatRoomMember.objects.get(chat_room = response['chat_room'],user = self.user)
             last_message = ChatMessage.objects.get(num = response['num'],chat_room = response['chat_room'])
             member.last_read = last_message
@@ -73,8 +72,7 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
                 user_list = chat_room.users.all()
                 return list(user_list)
             
-            @SyncToAsync
-            def send_fcm_message(user):
+            async def send_fcm_message(user):
                 if user.device_token and message_data['sender'] != user.nickname:
                     message = messaging.Message(
                         notification=messaging.Notification(
@@ -84,9 +82,9 @@ class ChatConsumer(AsyncWebsocketConsumer): # async
                         token=user.device_token
                     )
                     try:
-                        messaging.send(message)
-                    except:
-                        pass
+                        await messaging.send(message)  # 비동기로 호출
+                    except Exception as e:
+                        print(f"FCM send error: {e}")
             
             if chat_room:
                 user_list = await get_user_list()
