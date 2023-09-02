@@ -20,7 +20,6 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         auth_header = request.META.get("HTTP_AUTHORIZATION")
         fcm_token = request.META.get("HTTP_FCMTOKEN","")
-        print(request.META)
         if not auth_header:
             raise NoAuthToken("No auth token provided")
 
@@ -42,13 +41,13 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
         try:
             user = User.objects.get(username=uid)
             if fcm_token and user.device_token != fcm_token:
-                user.device_token = fcm_token.split(' ');
+                user.device_token = fcm_token.split(' ')[-1];
                 user.save()
         except :
             user = User.objects.create_user(
                 username = uid,
-                email=decoded_token.get("email"," ")[-1],
-                device_token = fcm_token
+                email=decoded_token.get("email"," "),
+                device_token = fcm_token.split(' ')[-1]
             )
         request.user = user
         return (user, None)
