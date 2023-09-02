@@ -41,13 +41,13 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
             raise FirebaseError()
         try:
             user = User.objects.get(username=uid)
-            if user.device_token != fcm_token:
-                user.device_token = fcm_token;
+            if fcm_token and user.device_token != fcm_token:
+                user.device_token = fcm_token.split(' ');
                 user.save()
         except :
             user = User.objects.create_user(
                 username = uid,
-                email=decoded_token.get("email",""),
+                email=decoded_token.get("email"," ")[-1],
                 device_token = fcm_token
             )
         request.user = user
