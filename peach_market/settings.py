@@ -105,7 +105,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
-    'FCM_TOKEN'
+    'HTTP_FCM_TOKEN'
 ]
 
 # Database
