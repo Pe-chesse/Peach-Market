@@ -10,15 +10,14 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@master
-
+      - name: create firebase json file
+        run: |
+          touch "${{ secrets.FIREBASE_PATH }}".json
+          echo "${{ secrets.FIREBASE_CONFIG }}" >> "${{ secrets.FIREBASE_PATH }}".json
       - name: create env file
         run: |
           touch .env
           echo "${{ secrets.ENV_VARS }}" >> .env
-      - name: create firebase json file
-        run: |
-          touch ${{ secrets.FIREBASE_PATH }}.json
-          echo "${{ secrets.FIREBASE_CONFIG }}" >> ${{ secrets.FIREBASE_PATH }}.json
       - name: create remote directory
         uses: appleboy/ssh-action@master
         with:

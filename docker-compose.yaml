@@ -25,7 +25,6 @@ services:
       - redis_data:/data
     ports:
       - "6379:6379"
-
   web:
     container_name: web
     build:
@@ -65,6 +64,8 @@ services:
     build: ./config/nginx
     ports:
       - "80:80"
+    volumes:
+      - ../frontend/:/usr/share/nginx/html
     depends_on:
       - web
       - uvicorn
