@@ -1,0 +1,74 @@
+#!/bin/bash
+
+version: "3"
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  redis:
+    container_name: redis
+    image: redis:latest
+    environment:
+      - REDIS_MAXMEMORY_POLICY=allkeys-lru
+      - REDIS_LIST_MAX_ZIPLIST_ENTRIES=30
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+  web:
+    container_name: web
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: web
+    env_file:
+      - .env
+    expose:
+      - 8000
+    entrypoint:
+      - sh
+      - /home/app/web/config/docker/entrypoint.prod.sh
+    ports:
+      - "8000:8000"
+
+  uvicorn:
+    container_name: uvicorn
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: uvicorn
+    env_file:
+      - .env
+    ports:
+      - "8001:8001"
+    expose:
+      - 8001
+    entrypoint:
+      - sh
+      - /home/app/uvicorn/config/docker/entrypoint-ws.prod.sh
+
+  nginx:
+    container_name: nginx
+    build: ./config/nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+      - uvicorn
+
+volumes:
+  postgres_data:
+  redis_data:

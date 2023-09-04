@@ -141,6 +141,9 @@ ENV/
 env.bak/
 venv.bak/
 
+#firebase key json
+peach-market-*.json
+
 # Spyder project settings
 .spyderproject
 .spyproject
